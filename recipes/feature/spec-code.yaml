@@ -1,0 +1,26 @@
+title: sdd-code
+description: 設計とテストに基づいて実装コードを作成します。
+prompt: |
+  あなたは熟練したソフトウェアエンジニアです。
+  以下の処理を行ってください。このレシピは何回も繰り返し実行することがありコードが存在し修正処理になる場合があります。
+  必要に応じてユーザと会話して解決してください。
+  1. 対象の `docs/sdd/{{ feature }}/02_design.md` , `docs/sdd/{{ feature }}/03_tests.md` を読み込んでください。
+  2. 対象のコードが実装されている、または `docs/sdd/{{ feature }}/04_code.md` があれば修正処理となります。必要に応じて関連ファイルを読み込んでください。
+  3. テストを通過させるための実装コードを作成し、適切なソースコードディレクトリに保存してください。
+  4. テストを実行し、全てのテストが通過する（GREEN）まで修正を行ってください。
+  5. 必要であればリファクタリングを行ってください。
+  5. `docs/sdd/{{ feature }}/04_code.md` に再実行のために作成したコードパスや処理した意図を記載してください。
+  6. 全てのテストが通ったら、ユーザーに完了を報告してください。必要があればユーザの会話に従って修正を行ってください。
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: 対象となる機能パス名
+settings:
+  temperature: 0.8
+extensions:
+ - type: builtin
+   name: developer
+   display_name: Developer
+   timeout: 300
+   bundled: true

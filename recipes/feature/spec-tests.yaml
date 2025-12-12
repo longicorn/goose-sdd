@@ -1,0 +1,24 @@
+title: sdd-tests
+description: 設計仕様書に基づいてテストコードを作成します。
+prompt: |
+  あなたはテスト駆動開発(TDD)のエキスパートです
+  以下の処理を行ってください。不明点は適時ユーザと会話して解決してください。
+  1. `docs/sdd/{{ feature }}/02_requirements.md` , `docs/sdd/{{ feature }}/02_design.md` を読み込んでください。
+  2. プロジェクトの既存のテストフレームワークを確認してください。
+  3. 設計仕様を満たすための「テストコード」を作成し、適切なテストディレクトリにファイルを保存してください。
+  4. テストを実行し、「失敗すること（RED）」を確認してください。実装がないため失敗するのが正しい挙動です。
+  5. 実装時に利用するため、作成したテストコード関連の情報について、`docs/sdd/{{ feature }}/03_tests.md` に記録してください。
+  6. 完了したら、次は `spec-code` レシピを実行するよう促してください。
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: 対象となる機能パス名
+settings:
+  temperature: 0.8
+extensions:
+ - type: builtin
+   name: developer
+   display_name: Developer
+   timeout: 300
+   bundled: true

@@ -1,0 +1,135 @@
+#/bin/bash
+
+SELF_FPATH=$(realpath "$0");
+SELF_DIR=$(dirname "$SELF_FPATH");
+RECIPE_DIR=${SELF_DIR}/../recipes
+
+DOCUMENT_PROVIDER=${GOOSE_PROVIDER:-gemini-cli}
+DOCUMENT_MODEL=${GOOSE_MODEL:-default}
+CODING_PROVIDER=${GOOSE_CODING_PROVIDER:-$DOCUMENT_PROVIDER}
+CODING_MODEL=${GOOSE_CODING_MODEL:-$DOCUMENT_MODEL}
+
+system() {
+  command=$1
+  shift
+
+  case $command in
+    init | i)
+      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-init.yaml
+      ;;
+    background | b)
+      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR/system"/spec-background.yaml --interactive
+      ;;
+    concept | c)
+      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-concept.yaml --interactive
+      ;;
+    architecture | a)
+      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-architecture.yaml --interactive
+      ;;
+    rules | r)
+      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-rules.yaml --interactive
+      ;;
+    glossary | g)
+      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-glossary.yaml --interactive
+      ;;
+    help | h | *)
+      echo '  01. init(i)'
+      echo '  02. background(b)'
+      echo '  03. concept(t)'
+      echo '  04. architecture(a)'
+      echo '  05. rules(r)'
+      echo '  05. glossary(g)'
+      echo '      help'
+      ;;
+  esac
+}
+
+feature_goose_run() {
+  command=$1
+  shift
+  if [ -z $command ]; then
+    echo "Usage: feature $command <feature>"
+    return 1
+  fi
+
+  feature_str=$1
+  shift
+  if [ -z $feature_str ]; then
+    echo "Usage: feature $command <feature>"
+    return 1
+  fi
+
+  goose_interactive=$1
+  shift
+
+  goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/feature/spec-"$command".yaml --params feature="$feature_str" "$goose_interactive"
+}
+
+feature_list() {
+  FILE_NAME='00_feature.md'
+  for dir_path in docs/sdd/*; do
+    dir_name="$dir_path%/"
+    target_file="$dir_path/$FILE_NAME"
+    if [ -f "$target_file" ]; then
+        content=$(cat "$target_file")
+        echo "- $dir_name: $content"
+    fi
+  done
+}
+
+feature() {
+  command=$1
+  shift
+
+  feature_str=$1
+  shift
+
+  case $command in
+    init | i)
+      feature_goose_run $command $feature_str
+      ;;
+    requirements | r)
+      feature_goose_run requirements $feature_str --interactive
+      ;;
+    design| d)
+      feature_goose_run design $feature_str --interactive
+      ;;
+    tests | t)
+      feature_goose_run tests $feature_str --interactive
+      ;;
+    code | c)
+      feature_goose_run code $feature_str --interactive
+      ;;
+    list | l)
+      feature_list
+      ;;
+    help | h | *)
+      echo '  01. init(i) <feature text>'
+      echo '  02. requirements(r) <feature>'
+      echo '  03. tests(t) <feature>'
+      echo '  04. code(c) <feature>'
+      echo '      help'
+      ;;
+  esac
+}
+
+mode=$1
+shift
+case $mode in
+  --system | -s)
+    system $1
+    ;;
+  --feature | -f)
+    feature $1 $2
+    ;;
+  --version | -v)
+    echo '0.0.1'
+    ;;
+  --help | -h | *)
+    echo 'Options:'
+    echo '--system(-s) <command>'
+    system
+    echo '--feature(-f) <command>'
+    feature
+    ;;
+esac

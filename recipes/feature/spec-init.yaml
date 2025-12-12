@@ -1,0 +1,29 @@
+title: sdd-init
+description: Spec-Driven Developmentのためのディレクトリ構造とテンプレートを初期化します。
+prompt: |
+  あなたはSDD（Spec-Driven Development）のファシリテーターです。
+  {{ feature }} が「対象となる機能名（またはパス）」です。これを元に以下の処理を行ってください。
+  既存プロジェクトの一部として機能を追加することを想定しています。
+  1. {{ feature }} を元に適切な英語で機能名を決定する。
+  2. プロジェクトルート（または適切な場所）に `docs/sdd/{{ feature }}/` ディレクトリを作成するコマンドを実行する。
+  3. その中に以下の空のMarkdownファイルを作成するコマンドを実行する。
+     - `00_feature.md`: ユーザ入力の {{ feature }} を記録する
+     - `01_requirements.md`: 要求仕様書
+     - `02_design.md`: 基本設計・技術仕様書
+     - `03_tests.md`: テスト仕様関連書
+     - `04_code.md`: コード実装関連書
+  4. `00_feature.md` に ユーザ入力の {{ feature }} を書き込んでください（上書き）。
+  5. 完了したら、作成したディレクトリ構造を報告し、次は `spec-requirements` レシピを実行するよう促す。
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: 対象となる機能名
+settings:
+  temperature: 0.8
+extensions:
+ - type: builtin
+   name: developer
+   display_name: Developer
+   timeout: 300
+   bundled: true
