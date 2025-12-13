@@ -11,7 +11,7 @@ prompt: |
      - `02_system_architecture.md`: アーキテクチャ
      - `03_project_rules.md`: コーディング規約・AIへの指示ルール
      - `04_domain_glossary.md`: 用語集・ユビキタス言語
-  3. 完了したら、作成したディレクトリ構造を報告し、次は `spec-context` レシピを実行するよう促す。
+  3. 完了したら、作成したディレクトリ構造を報告し、次は `spec-background` レシピを実行するよう促す。
 settings:
   temperature: 0.8
 extensions:

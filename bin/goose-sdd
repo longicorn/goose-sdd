@@ -62,7 +62,7 @@ feature_goose_run() {
   goose_interactive=$1
   shift
 
-  goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/feature/spec-"$command".yaml --params feature="$feature_str" "$goose_interactive"
+  goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/feature/spec-"$command".yaml --params feature="$feature_str" $goose_interactive
 }
 
 feature_list() {
@@ -86,7 +86,7 @@ feature() {
 
   case $command in
     init | i)
-      feature_goose_run $command $feature_str
+      feature_goose_run init $feature_str
       ;;
     requirements | r)
       feature_goose_run requirements $feature_str --interactive
@@ -123,7 +123,7 @@ case $mode in
     feature $1 $2
     ;;
   --version | -v)
-    echo '0.0.1'
+    echo '0.0.2'
     ;;
   --help | -h | *)
     echo 'Options:'
