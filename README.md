@@ -17,6 +17,17 @@ $ git clone https://github.com/longicorn/goose-sdd
 
 `goose-sdd/bin` へパスを通してください
 
+## 環境変数
+- ドキュメント処理用
+  - DOCUMENT_PROVIDER
+  - DOCUMENT_MODEL
+- コーディング所為r用
+  - CODING_PROVIDER
+  - CODING_MODEL
+- 未設定時
+  - GOOSE_PROVIDER
+  - GOOSE_MODEL
+
 ## 使い方
 ラッパースクリプトを使用して、System (全体) と Feature (個別機能) のモードを切り替えて使用します。
 
