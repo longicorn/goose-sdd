@@ -3,6 +3,8 @@
 SELF_FPATH=$(realpath "$0");
 SELF_DIR=$(dirname "$SELF_FPATH");
 RECIPE_DIR=${SELF_DIR}/../recipes
+PRJ_DIR=`pwd`
+PRJ_NAME=`basename $PRJ_DIR`
 
 DOCUMENT_PROVIDER=${DOCUMENT_PROVIDER:-$GOOSE_LEAD_PROVIDER}
 DOCUMENT_PROVIDER=${DOCUMENT_PROVIDER:-$GOOSE_PROVIDER}
@@ -10,6 +12,7 @@ DOCUMENT_MODEL=${GOOSE_LEAD_MODEL:-$GOOSE_MODEL}
 DOCUMENT_MODEL=${DOCUMENT_MODEL:-default}
 CODING_PROVIDER=${CODING_PROVIDER:-$GOOSE_PROVIDER}
 CODING_MODEL=${GOOSE_CODING_MODEL:-$DOCUMENT_MODEL}
+GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
 
 system() {
   command=$1
@@ -17,22 +20,22 @@ system() {
 
   case $command in
     init | i)
-      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-init.yaml
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe $RECIPE_DIR/system/spec-init.yaml
       ;;
     background | b)
-      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR/system"/spec-background.yaml --interactive
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System background: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-background.yaml"
       ;;
     concept | c)
-      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-concept.yaml --interactive
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System concept: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-concept.yaml"
       ;;
     architecture | a)
-      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-architecture.yaml --interactive
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System architecture: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-architecture.yaml"
       ;;
     rules | r)
-      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-rules.yaml --interactive
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System rules: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-rules.yaml"
       ;;
     glossary | g)
-      goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/system/spec-glossary.yaml --interactive
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System glossary: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-glossary.yaml"
       ;;
     help | h | *)
       echo '  01. init(i)'
@@ -64,7 +67,7 @@ feature_goose_run() {
   goose_interactive=$1
   shift
 
-  goose run --provider "$DOCUMENT_PROVIDER" --model "$DOCUMENT_MODEL" --recipe "$RECIPE_DIR"/feature/spec-"$command".yaml --params feature="$feature_str" $goose_interactive
+  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME " $goose_interactive --recipe "$RECIPE_DIR/feature/spec-$command.yaml" --params feature="$feature_str"
 }
 
 feature_list() {
@@ -125,7 +128,7 @@ case $mode in
     feature $1 $2
     ;;
   --version | -v)
-    echo '0.0.3'
+    echo '0.0.4'
     ;;
   --help | -h | *)
     echo 'Options:'
