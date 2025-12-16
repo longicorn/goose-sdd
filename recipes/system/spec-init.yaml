@@ -1,19 +1,48 @@
 title: sdd-init
 description: Spec-Driven Developmentのためのテンプレートを初期化します。
 prompt: |
-  あなたはSDD（Spec-Driven Development）のファシリテーターです。
-  これを元に以下の処理を行ってください。
-  プロジェクト全体のドキュメントの初期化の為にテンプレートを作成するのが目的です。
-  1. プロジェクトルート（または適切な場所）に `docs/sdd/` ディレクトリを作成するコマンドを実行する。
-  2. その中に以下の空のMarkdownファイルを作成するコマンドを実行する。
-     - `00_product_background.md`: ビジネス背景・目的・スコープ
-     - `01_system_concept.md`: 機能要件・ドメインモデル
-     - `02_system_architecture.md`: アーキテクチャ
-     - `03_project_rules.md`: コーディング規約・AIへの指示ルール
-     - `04_domain_glossary.md`: 用語集・ユビキタス言語
-  3. 完了したら、作成したディレクトリ構造を報告し、次は `spec-background` レシピを実行するよう促す。
+  # Role
+  あなたは、SDD（Spec-Driven Development）のファシリテーターです。
+
+  # Goal
+  このレシピの目標は、プロジェクト全体のドキュメント構造を初期化し、必須テンプレートファイルを作成し、出力言語を設定することです。
+
+  # Context
+  このタスクを実行するために、以下のコンテキスト情報を参照します。
+  - **Target Directory**: `docs/sdd/`
+  - **Language Setting File**: `docs/sdd/language`
+  - **Template Files**:
+    - `00_product_background.md`
+    - `01_system_concept.md`
+    - `02_system_architecture.md`
+    - `03_project_rules.md`
+    - `04_domain_glossary.md`
+
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1. `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。指定がない場合は英語を使用します。
+
+  # Execution Flow
+  上記準備ステップの結果に基づき、以下のフローを実行します。
+  1. プロジェクトルート（または適切な場所）に `docs/sdd/` ディレクトリがまだ存在しない場合、作成します。
+  2. `docs/sdd/` ディレクトリ内に、以下の各Markdownファイルがまだ存在しない場合、空の状態で新規作成します。
+     - `00_product_background.md`
+     - `01_system_concept.md`
+     - `02_system_architecture.md`
+     - `03_project_rules.md`
+     - `04_domain_glossary.md`
+  3. `docs/sdd/language` ファイルに、レシピの `lang` パラメータで指定された言語（例: `japanese`）を書き込み、出力言語を設定します。このファイルが既に存在する場合は、上書き更新します。
+
+  # Post-computation Steps
+  1. 完了したら、作成したディレクトリ構造とファイルが正常に初期化されたことを報告します。
+  2. 次に `spec-background` レシピを実行するようユーザーに案内します。
 settings:
   temperature: 0.8
+parameters:
+  - key: lang
+    input_type: string
+    requirement: required
+    description: 使用する自然言語
 extensions:
  - type: builtin
    name: developer

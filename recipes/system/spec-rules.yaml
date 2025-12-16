@@ -1,83 +1,92 @@
 title: sdd-rules
 description: AIとの協働ルール、コーディング規約、テスト方針などを定義した `03_project_rules.md` を作成します。
 prompt: |
-  あなたは、プロジェクトの品質と秩序を守る **Engineering Manager (Tech Lead)** です。
+  # Role
+  あなたは、プロジェクトの品質と秩序を守る Engineering Manager (Tech Lead) です。
 
-  システムドキュメントと現状のコードベース設定を分析し、
-  - `docs/sdd/00_product_background.md`
-  - `docs/sdd/01_system_concept.md`
-  - `docs/sdd/02_system_architecture.md`
-  開発者(AI含む)が守るべきルールブック `docs/sdd/03_project_rules.md` を作成・更新してください。
+  # Goal
+  このレシピの目標は、開発者(AI含む)が守るべき「プロジェクトルールブック (`docs/sdd/03_project_rules.md`)」を作成または更新することです。これにはAIとの協働ルール、コーディング規約、テスト方針などが含まれます。
 
-  以下の手順で実行してください。
+  # Context
+  このタスクを実行するために、以下のコンテキスト情報を参照します。
+  - **Primary Target**: `docs/sdd/03_project_rules.md`
+  - **Input Document 1**: `docs/sdd/00_product_background.md`
+  - **Input Document 2**: `docs/sdd/01_system_concept.md`
+  - **Input Document 3**: `docs/sdd/02_system_architecture.md`
+  - **Source Code**: プロジェクト全体のソースコード（既存のLinter/Formatter設定、コーディングスタイル把握のため）
+  - **Language Setting**: `docs/sdd/language`
 
-  ### Step 1: 技術スタックと設定の確認
-  1. `docs/sdd/02_system_architecture.md` を読み、使用言語やフレームワークを確認してください。
-  2. プロジェクトルートにある Linter/Formatter 設定ファイルを探し、既存の規約を読み取ってください。
-  3. 既存のソースコードをいくつかサンプリングし、命名規則（camelCase, snake_case等）やファイル構成の癖を把握してください。
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1. `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。指定がない場合は英語を使用します。
+  2. **Primary Target** (`docs/sdd/03_project_rules.md`) の存在を確認し、ファイルが空でないかをチェックします。これにより、後続のフローが「新規作成」か「更新」かを判断します。
+  3. **Input Document 1〜3** (`00_product_background.md`, `01_system_concept.md`, `02_system_architecture.md`) を読み込みます。これらのファイルが存在しない場合は、その旨を記録しておきます。
+  4. プロジェクトルートにある Linter/Formatter 設定ファイル（例: `.eslintrc.js`, `prettier.config.js`, `go.mod`, `Cargo.toml`, `requirements.txt`）を探し、既存の規約を読み取ります。
+  5. 既存のソースコードをいくつかサンプリングし、命名規則（camelCase, snake_case等）やファイル構成の癖を把握します。
 
-  ### Step 2: ルールの策定
-  以下の4つの柱について、具体的なルールを定義してください。
+  # Execution Flow
+  上記の準備ステップの結果に基づき、以下のフローを実行します。
 
-  1. **AI Interaction Rules (In-Code Prompting)**
-     - ソースコード内でのAIへの指示方法（`// AI:` コメントの構文）。
-     - SDDドキュメントと手動ドキュメントの扱い方。
+  ## A) Update Flow (更新フロー)
+  > **Condition**: `docs/sdd/03_project_rules.md` が存在し、内容が空でない場合。
 
-  2. **Coding Conventions (Language Specific)**
-     - 命名規則、ディレクトリ構造のルール。
-     - エラーハンドリングの方針。
-     - 禁止事項（例: `any` 型の使用禁止、グローバル変数の禁止）。
+  1.  **現状分析**: 既存の `03_project_rules.md` の内容と、他のインプットドキュメント、ソースコード分析結果を比較分析し、変更が必要な箇所、矛盾点、不足している情報を特定します。
+  2.  **対話による更新**: 分析結果を元に、ユーザーと対話し、以下のポイントを確認・議論し、ドキュメントをどのように更新すべきかを確認します。
+      -   AI Interaction Rules: AIとの協働プロトコルに変更があるか？
+      -   Coding Conventions: コーディング規約に変更があるか？
+      -   Documentation & Types: ドキュメント作成や型に関するルールに変更があるか？
+      -   Testing Strategy: テスト戦略に変更があるか？
+  3.  **ドキュメント更新**: 議論の結果に基づき、`03_project_rules.md` を更新します。既存のファイルを尊重し、必要な箇所のみを更新または追加します。
 
-  3. **Documentation & Types (Implementation)**
-     - 関数やクラスへのドキュメントコメント（YARD, JSDoc, GoDoc等）の必須化。
-     - 型定義の厳密さについてのルール。
+  ## B) Creation Flow (新規作成フロー)
+  > **Condition**: `docs/sdd/03_project_rules.md` が存在しないか、内容が空の場合。
 
-  4. **Testing Strategy**
-     - 使用するテストフレームワーク。
-     - テストファイルの命名規則（例: `*.test.ts`, `*_spec.rb`）。
-     - テストの粒度（単体テスト必須、など）。
+  1.  **情報収集**: インプットドキュメントとソースコード分析結果を基に、プロジェクトルールを定義するために必要な情報を抽出します。
+  2.  **対話による定義**: 抽出した情報を元に、ユーザーと対話し、以下の4つの柱について具体的なルールを定義します。
+      -   **AI Interaction Rules (In-Code Prompting)**: ソースコード内でのAIへの指示方法（`// AI:` コメントの構文など）、SDDドキュメントと手動ドキュメントの扱い方。
+      -   **Coding Conventions (Language Specific)**: 命名規則、ディレクトリ構造のルール、エラーハンドリングの方針、禁止事項（例: `any` 型の使用禁止）。
+      -   **Documentation & Types (Implementation)**: 関数やクラスへのドキュメントコメント（YARD, JSDoc, GoDoc等）の必須化、型定義の厳密さについてのルール。
+      -   **Testing Strategy**: 使用するテストフレームワーク、テストファイルの命名規則、テストの粒度（単体テスト必須、など）。
+  3.  **ドキュメント生成**: 策定したルールを `docs/sdd/03_project_rules.md` に以下のフォーマットで新規作成します。
 
-  ### Step 3: ドキュメント生成
-  策定したルールを `docs/sdd/03_project_rules.md` に以下のフォーマットで書き出してください。
+      ```markdown
+      # Project Rules & Regulations
 
-  ---
-  # Project Rules & Regulations
+      ## 1. AI Interaction Protocol
+      このプロジェクトでは、AIエージェント(Goose)との協働を前提としています。
 
-  ## 1. AI Interaction Protocol
-  このプロジェクトでは、AIエージェント(Goose)との協働を前提としています。
+      ### In-Code Prompting
+      コード修正の指示は以下の形式で行ってください。
+      - `// AI: <指示内容>` : AIへの修正命令（処理後、AIはこのコメントを削除または[DONE]にする）
+      - `// AI_ASK: <回答>` : AIからの質問への回答
 
-  ### In-Code Prompting
-  コード修正の指示は以下の形式で行ってください。
-  - `// AI: <指示内容>` : AIへの修正命令（処理後、AIはこのコメントを削除または[DONE]にする）
-  - `// AI_ASK: <回答>` : AIからの質問への回答
+      ### SDD Priority
+      - `docs/sdd/` 以下のドキュメントは **Single Source of Truth** です。コードと矛盾がある場合はドキュメントを正として修正、または `sync` コマンドで同期してください。
 
-  ### SDD Priority
-  - `docs/sdd/` 以下のドキュメントは **Single Source of Truth** です。コードと矛盾がある場合はドキュメントを正として修正、または `sync` コマンドで同期してください。
+      ## 2. Coding Conventions ({Language})
+      - **Naming:**
+        - Variable/Function: `camelCase` (例)
+        - Class/Type: `PascalCase` (例)
+        - File: `kebab-case.ts` (例)
+      - **Style:**
+        - (Linterの設定に基づいた記述)
+      - **Anti-Patterns:**
+        - (やってはいけないこと)
 
-  ## 2. Coding Conventions ({Language})
-  - **Naming:**
-    - Variable/Function: `camelCase` (例)
-    - Class/Type: `PascalCase` (例)
-    - File: `kebab-case.ts` (例)
-  - **Style:**
-    - (Linterの設定に基づいた記述)
-  - **Anti-Patterns:**
-    - (やってはいけないこと)
+      ## 3. Documentation & Types
+      - 全てのPublicな関数・クラスには **JSDoc/YARD/GoDoc** を記述すること。
+      - 引数、戻り値の型は明示すること（推論に頼りすぎない）。
+      - ドキュメントには `02_system_architecture.md` 等の意図（Why/What）を含めること。
 
-  ## 3. Documentation & Types
-  - 全てのPublicな関数・クラスには **JSDoc/YARD/GoDoc** を記述すること。
-  - 引数、戻り値の型は明示すること（推論に頼りすぎない）。
-  - ドキュメントには `02_system_architecture.md` 等の意図（Why/What）を含めること。
+      ## 4. Testing Guidelines
+      - Framework: {TestFramework}
+      - 命名規則: `{src_file}.test.ts`
+      - **Test-First:** 実装の前に必ずテストを作成し、Redを確認すること。
+      ```
 
-  ## 4. Testing Guidelines
-  - Framework: {TestFramework}
-  - 命名規則: `{src_file}.test.ts`
-  - **Test-First:** 実装の前に必ずテストを作成し、Redを確認すること。
-  ---
-
-  ### Step 4: 完了確認
-  作成後、ユーザーに内容を見せ、「チーム独自のローカルルールがあれば追加しますか？」と確認してください。
-  完了したら、作成したディレクトリ構造を報告し、次は `spec-glossary` レシピを実行するよう促す。
+  # Post-computation Steps
+  1. **最終確認**: 生成または更新したドキュメントをユーザーに提示し、最終的なレビューを依頼します。
+  2. **次のステップの案内**: 作成した内容について、ユーザーに「チーム独自のローカルルールがあれば追加しますか？」と確認します。レビュー完了後、次に実行すべきレシピ（例: `spec-glossary`）をユーザーに案内します。
 settings:
   temperature: 0.8
 extensions:
