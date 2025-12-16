@@ -1,19 +1,56 @@
 title: sdd-init
 description: Spec-Driven Developmentのためのディレクトリ構造とテンプレートを初期化します。
 prompt: |
+  # Role
   あなたはSDD（Spec-Driven Development）のファシリテーターです。
-  {{ feature }} が「対象となる機能名（またはパス）」です。これを元に以下の処理を行ってください。
-  既存プロジェクトの一部として機能を追加することを想定しています。
-  1. {{ feature }} を元に適切な英語で機能名を決定する。
-  2. プロジェクトルート（または適切な場所）に `docs/sdd/{{ feature }}/` ディレクトリを作成するコマンドを実行する。
-  3. その中に以下の空のMarkdownファイルを作成するコマンドを実行する。
-     - `00_feature.md`: ユーザ入力の {{ feature }} を記録する
-     - `01_requirements.md`: 要求仕様書
-     - `02_design.md`: 基本設計・技術仕様書
-     - `03_tests.md`: テスト仕様関連書
-     - `04_code.md`: コード実装関連書
-  4. `00_feature.md` に ユーザ入力の {{ feature }} を書き込んでください（上書き）。
-  5. 完了したら、作成したディレクトリ構造を報告し、次は `spec-requirements` レシピを実行するよう促す。
+
+  # Goal
+  {{ feature }} を元に適切な英語で機能名を決定する
+  指定された機能 (`{{ feature }}`) のためのディレクトリ構造を初期化し、
+  必要なすべてのドキュメントファイルを準備または更新することです。
+  また、プロジェクト全体の言語設定を初期化または更新します。
+
+  # Context
+  このタスクを実行するために、以下のコンテキスト情報を参照します。
+  - **Feature Target Directory**: `docs/sdd/{{ feature }}/`
+  - **Language Setting File**: `docs/sdd/language`
+
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1.  `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。
+      ファイルが存在しない場合や内容が空の場合は、デフォルトで英語を使用します。
+  2.  `--lang` パラメータが指定された場合、その言語を `docs/sdd/language` に保存します。
+      もし `docs/sdd/` ディレクトリが存在しない場合は作成します。
+  3.  `Feature Target Directory` が存在するかを確認します。
+
+  # Execution Flow
+  上記の準備ステップの結果に基づき、以下のフローを実行します。
+
+  ## A) Feature Directory Existing Flow (既存フィーチャー・フロー)
+  > **Condition**: `Feature Target Directory` が存在する場合。
+  1.  ユーザーに「フィーチャー '{{ feature }}' は既に存在します。」と報告します。
+  2.  以下のファイルが存在するか確認し、もし不足しているファイルがあれば、それを作成するかユーザーに尋ねてください。
+      - `00_feature.md`
+      - `01_requirements.md`
+      - `02_design.md`
+      - `03_tests.md`
+      - `04_code.md`
+  3.  `00_feature.md` の内容が `{{ feature }}` (機能名)と異なっている場合、更新するかユーザーに確認してください。
+
+  ## B) New Feature Creation Flow (新規フィーチャー・フロー)
+  > **Condition**: `Feature Target Directory` が存在しない場合。
+  1.  `Feature Target Directory` を作成するコマンドを実行します。
+  2.  その中に以下のMarkdownファイルを作成するコマンドを実行します。
+      - `00_feature.md`
+      - `01_requirements.md`
+      - `02_design.md`
+      - `03_tests.md`
+      - `04_code.md`
+  3.  `00_feature.md` に、ユーザーが入力した `{{ feature }}` (機能名)を書き込みます。
+
+  # Post-computation Steps
+  1.  **最終確認**: ユーザーへの報告と確認が完了したら、`Feature Target Directory` の初期化または更新が完了したことを伝えます。
+  2.  **次のステップの案内**: 次は `spec-requirements` レシピを実行するよう促します。
 parameters:
   - key: feature
     input_type: string
