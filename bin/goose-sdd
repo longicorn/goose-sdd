@@ -14,6 +14,21 @@ CODING_PROVIDER=${CODING_PROVIDER:-$GOOSE_PROVIDER}
 CODING_MODEL=${GOOSE_CODING_MODEL:-$DOCUMENT_MODEL}
 GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
 
+tool() {
+  command=$1
+  shift
+
+  case $command in
+    ask | a)
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/spec-ask.yaml --interactive
+      ;;
+    help | h | *)
+      echo '  ask(a): Product Consultant'
+      echo '  help'
+      ;;
+  esac
+}
+
 system() {
   command=$1
   shift
@@ -67,7 +82,7 @@ feature_goose_run() {
   goose_interactive=$1
   shift
 
-  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME " $goose_interactive --recipe "$RECIPE_DIR/feature/spec-$command.yaml" --params feature="$feature_str"
+  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME" $goose_interactive --recipe "$RECIPE_DIR/feature/spec-$command.yaml" --params feature="$feature_str"
 }
 
 feature_list() {
@@ -91,18 +106,23 @@ feature() {
 
   case $command in
     init | i)
+      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run init $feature_str
       ;;
     requirements | r)
+      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run requirements $feature_str --interactive
       ;;
     design| d)
+      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run design $feature_str --interactive
       ;;
     tests | t)
+      GOOSE_PROVIDER_MODEL="--provider $CODING_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run tests $feature_str --interactive
       ;;
     code | c)
+      GOOSE_PROVIDER_MODEL="--provider $CODING_PROVIDER --model $CODING_MODEL"
       feature_goose_run code $feature_str --interactive
       ;;
     list | l)
@@ -111,8 +131,9 @@ feature() {
     help | h | *)
       echo '  01. init(i) <feature text>'
       echo '  02. requirements(r) <feature>'
-      echo '  03. tests(t) <feature>'
-      echo '  04. code(c) <feature>'
+      echo '  03. design(d) <feature>'
+      echo '  04. tests(t) <feature>'
+      echo '  05. code(c) <feature>'
       echo '      help'
       ;;
   esac
@@ -127,14 +148,19 @@ case $mode in
   --feature | -f)
     feature $1 $2
     ;;
+  --tool | -t)
+    tool $1
+    ;;
   --version | -v)
     echo '0.0.4'
     ;;
   --help | -h | *)
     echo 'Options:'
     echo '--system(-s) <command>'
-    system
+    system help
     echo '--feature(-f) <command>'
-    feature
+    feature help
+    echo '--tool(-t) <command>'
+    tool help
     ;;
 esac
