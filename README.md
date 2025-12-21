@@ -48,3 +48,9 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --feature design <feature name>`
 - `goose-sdd --feature tests <feature name>`
 - `goose-sdd --feature code <feature name>`
+
+3. Tool Layer
+SDDの情報を読み込み、ユーザをサポートする機能を提供します。
+
+- `goose-sdd --tool ask`
+  - SDDの情報を読み込みユーザの質問に回答します。
