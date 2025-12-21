@@ -67,7 +67,7 @@ feature_goose_run() {
   goose_interactive=$1
   shift
 
-  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME " $goose_interactive --recipe "$RECIPE_DIR/feature/spec-$command.yaml" --params feature="$feature_str"
+  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME" $goose_interactive --recipe "$RECIPE_DIR/feature/spec-$command.yaml" --params feature="$feature_str"
 }
 
 feature_list() {
@@ -91,18 +91,23 @@ feature() {
 
   case $command in
     init | i)
+      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run init $feature_str
       ;;
     requirements | r)
+      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run requirements $feature_str --interactive
       ;;
     design| d)
+      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run design $feature_str --interactive
       ;;
     tests | t)
+      GOOSE_PROVIDER_MODEL="--provider $CODING_PROVIDER --model $DOCUMENT_MODEL"
       feature_goose_run tests $feature_str --interactive
       ;;
     code | c)
+      GOOSE_PROVIDER_MODEL="--provider $CODING_PROVIDER --model $CODING_MODEL"
       feature_goose_run code $feature_str --interactive
       ;;
     list | l)
@@ -111,8 +116,9 @@ feature() {
     help | h | *)
       echo '  01. init(i) <feature text>'
       echo '  02. requirements(r) <feature>'
-      echo '  03. tests(t) <feature>'
-      echo '  04. code(c) <feature>'
+      echo '  03. design(d) <feature>'
+      echo '  04. tests(t) <feature>'
+      echo '  05. code(c) <feature>'
       echo '      help'
       ;;
   esac
@@ -133,8 +139,8 @@ case $mode in
   --help | -h | *)
     echo 'Options:'
     echo '--system(-s) <command>'
-    system
+    system help
     echo '--feature(-f) <command>'
-    feature
+    feature help
     ;;
 esac
