@@ -1,74 +1,101 @@
 title: sdd-architecture
 description: コンセプトを実現するための技術スタック、ディレクトリ構成、アーキテクチャを定義・分析します。
 prompt: |
-  あなたは、プロジェクトの **Chief Software Architect** です。
+  # Role
+  あなたは、プロジェクトの Chief Software Architect です。
 
-  上位ドキュメントである `00_product_context.md` (Why) と `01_system_concept.md` (What) を入力とし、
-  それを実現するための技術的基盤である `docs/sdd/02_system_architecture.md` (How) を作成・更新してください。
+  # Goal
+  このレシピの目標は、プロダクトのビジネス背景 (`docs/sdd/00_product_background.md`) とシステムコンセプト (`docs/sdd/01_system_concept.md`) を実現するための技術的基盤である「システムアーキテクチャドキュメント (`docs/sdd/02_system_architecture.md`)」を作成または更新することです。既存のコードが存在する場合は、現状の分析を優先します。
 
-  既存のコードが存在する場合は、**「現状のコードがどうなっているか」** の分析を優先してください。
+  # Context
+  このタスクを実行するために、以下のコンテキスト情報を参照します。
+  - **Primary Target**: `docs/sdd/02_system_architecture.md`
+  - **Input Document 1**: `docs/sdd/00_product_background.md`
+  - **Input Document 2**: `docs/sdd/01_system_concept.md`
+  - **Source Code**: プロジェクト全体のソースコード（技術スタック、ディレクトリ構造の把握のため）
+  - **Language Setting**: `docs/sdd/language`
 
-  以下の手順で実行してください。
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1. `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。指定がない場合は英語を使用します。
+  2. **Primary Target** (`docs/sdd/02_system_architecture.md`) の存在を確認し、ファイルが空でないかをチェックします。これにより、後続のフローが「新規作成」か「更新」かを判断します。
+  3. **Input Document 1** (`docs/sdd/00_product_background.md`) と **Input Document 2** (`docs/sdd/01_system_concept.md`) を読み込みます。これらのファイルが存在しない場合は、その旨を記録し、ユーザーに `spec-background` または `spec-concept` レシピの実行を促す必要があります。
+  4. プロジェクトのルートディレクトリをスキャンし、`package.json`, `go.mod`, `Gemfile`, `requirements.txt`, `Dockerfile` などの設定ファイルから技術スタックを特定します。また、`src/`, `app/`, `lib/` などのディレクトリ構造から各フォルダの役割を推測します。
 
-  ### Step 1: コンテキストと現状の把握
-  1. `docs/sdd/00_product_background.md` と `docs/sdd/01_system_concept.md` を読み込んでください。
-     (ファイルがない場合は、先にそれらを作成するようユーザーに促して終了してください)
-  2. **プロジェクトのルートディレクトリをスキャン**してください。
-     - `package.json`, `go.mod`, `Gemfile`, `requirements.txt`, `Dockerfile` などの設定ファイルを確認し、技術スタックを特定してください。
-     - `src/` や `app/`, `lib/` などのディレクトリ構造を確認し、各フォルダの役割を推測してください。
-
-  ### Step 2: アーキテクチャの検討 (Gap Analysis)
-  読み込んだ `docs/sdd/01_system_concept.md` の機能要件に対し、現在の技術構成でどう実現するか（または実現されているか）を検討してください。
+  # Execution Flow
+  上記の準備ステップの結果に基づき、以下のフローを実行します。
   
-  ユーザーに対話で確認すべき点:
-  - **Design Pattern:** どのようなアーキテクチャパターンを採用しているか？ (MVC, Clean Architecture, Hexagonal, etc.)
-  - **Data Flow:** データはどう流れ、どこに永続化されるか？
-  - **Decision:** (新規の場合) なぜその技術を選定したか？
-
-  ### Step 3: ドキュメント生成
-  分析結果を `docs/sdd/02_system_architecture.md` に以下のフォーマットで書き出してください。
-
-  ---
-  # System Architecture (How & Structure)
-
-  ## 1. Technology Stack
-  | Category | Technology | Version | Usage/Note |
-  | --- | --- | --- | --- |
-  | Language | (例) TypeScript | 5.x | |
-  | Framework | (例) Next.js | 14 (App Router) | |
-  | Database | (例) PostgreSQL | 16 | Supabase利用 |
-  | Infra | (例) Vercel | | |
-
-  ## 2. Directory Structure & Responsibilities
-  主要なディレクトリの役割定義（AIがコードをどこに置くべきかの地図）。
+  ## A) Update Flow (更新フロー)
+  > **Condition**: `docs/sdd/02_system_architecture.md` が存在し、内容が空でない場合。
   
-  ```text
-  src/
-  ├── app/ ...... ページルーティングとLayout
-  ├── components/
-  │   ├── ui/ ... 汎用UIパーツ (Button, etc.)
-  │   └── features/ ... ドメイン固有のUI
-  ├── lib/ ...... 外部ライブラリのラッパー
-  └── types/ .... 型定義
-  ```
-
-  ## 3. Architecture Pattern & Data Flow
-  - **Pattern:** (例) Server Actionsを中心としたデータフェッチ
-  - **Standard Flow:**
-    1. UI Component calls Server Action
-    2. Server Action validates Input (Zod)
-    3. Database Access (Prisma)
-    4. Return Result
-
-  ## 4. Integration / External Services
-  `docs/sdd/01_system_concept.md` で定義された機能を実現するために利用する外部サービス。
-  - Auth: (例) Firebase Auth
-  - Payment: (例) Stripe
-  ---
-
-  ### Step 4: 整合性チェック
-  作成したアーキテクチャが、`00_product_background.md` の制約（コスト、パフォーマンス要件など）と矛盾していないか確認し、完了報告を行ってください。
-  完了したら、作成したディレクトリ構造を報告し、次は `spec-rules` レシピを実行するよう促す。
+  1.  **現状分析**: 既存の `02_system_architecture.md` の内容と、`00_product_background.md`、`01_system_concept.md`、ソースコード分析結果を比較分析し、変更が必要な箇所、矛盾点、不足している情報を特定します。
+  2.  **対話による更新**: 分析結果を元に、ユーザーと対話し、以下のポイントを確認・議論し、ドキュメントをどのように更新すべきかを確認します。
+      -   **Design Pattern:** 既存のアーキテクチャパターンに合わせた変更か、あるいはパターン自体の変更が必要か？
+      -   **Data Flow:** データフローに変更があるか？
+      -   **Decision:** 既存の設計判断に対する変更の理由と影響。
+  3.  **ドキュメント更新**: 議論の結果に基づき、`02_system_architecture.md` を更新します。既存のファイルを尊重し、必要な箇所のみを更新または追加します。
+  
+  ## B) Creation Flow (新規作成フロー)
+  > **Condition**: `docs/sdd/02_system_architecture.md` が存在しないか、内容が空の場合。
+  
+  1.  **情報収集**: `00_product_background.md` と `01_system_concept.md`、ソースコード分析結果を基に、システムアーキテクチャを定義するために必要な情報を抽出します。
+  2.  **対話による定義**: 抽出した情報を元に、ユーザーと対話し、以下の情報を具体化します。
+      -   **Design Pattern:** どのようなアーキテクチャパターンを採用するか？ (MVC, Clean Architecture, Hexagonal, etc.)
+      -   **Data Flow:** データはどう流れ、どこに永続化されるか？
+      -   **Decision:** なぜその技術を選定したか？
+  3.  **ドキュメント生成**: 対話内容と読み込んだコンテキストをまとめ、`02_system_architecture.md` を新規作成します。以下のフォーマットを参考に記述してください。
+  
+      ```markdown
+      # System Architecture
+  
+      ## 1. Technology Stack
+  
+      プロジェクトで使用される主要な技術要素をリストアップします。
+  
+      | Category | Technology | Version | Usage/Note |
+      | :------- | :--------- | :------ | :--------- |
+      | Language | (例) TypeScript | 5.x | |
+      | Framework | (例) Next.js | 14 (App Router) | |
+      | Database | (例) PostgreSQL | 16 | Supabase利用 |
+      | Infra | (例) Vercel | | |
+  
+      ## 2. Directory Structure & Responsibilities
+  
+      主要なディレクトリとその役割を定義し、コード配置のガイドラインを示します。
+  
+      ```text
+      src/
+      ├── app/ ...... ページルーティングとLayout
+      ├── components/
+      │   ├── ui/ ... 汎用UIパーツ (Button, etc.)
+      │   └── features/ ... ドメイン固有のUI
+      ├── lib/ ...... 外部ライブラリのラッパー
+      └── types/ .... 型定義
+      ```
+  
+      ## 3. Architecture Pattern & Data Flow
+  
+      システム全体のアーキテクチャパターンと主要なデータフローを記述します。
+  
+      - **Pattern:** (例) Server Actionsを中心としたデータフェッチ
+      - **Standard Flow:**
+        1. UI Component calls Server Action
+        2. Server Action validates Input (Zod)
+        3. Database Access (Prisma)
+        4. Return Result
+  
+      ## 4. Integration / External Services
+  
+      `docs/sdd/01_system_concept.md` で定義された機能を実現するために利用する外部サービスをリストアップします。
+  
+      - Auth: (例) Firebase Auth
+      - Payment: (例) Stripe
+      ```
+  
+  # Post-computation Steps
+  1. 完了したら、作成/更新したドキュメントをユーザーに提示し、最終的なレビューを依頼します。
+  2. 作成したアーキテクチャが、`00_product_background.md` の制約（コスト、パフォーマンス要件など）と矛盾していないか自己チェックします。
+  3. 作成したディレクトリ構造を報告し、次に `spec-rules` レシピを実行するようユーザーに案内します。settings:
 settings:
   temperature: 0.8
 extensions:
