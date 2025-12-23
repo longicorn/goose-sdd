@@ -31,7 +31,7 @@ prompt: |
      - `02_system_architecture.md`
      - `03_project_rules.md`
      - `04_domain_glossary.md`
-  3. `docs/sdd/language` ファイルに、レシピの `lang` パラメータで指定された言語（例: `japanese`）を書き込み、出力言語を設定します。このファイルが既に存在する場合は、上書き更新します。
+  3. `docs/sdd/language` ファイルに、 {{language}} を書き込み、出力言語を設定します。このファイルが既に存在する場合は、上書き更新します。
 
   # Post-computation Steps
   1. 完了したら、作成したディレクトリ構造とファイルが正常に初期化されたことを報告します。
@@ -39,7 +39,7 @@ prompt: |
 settings:
   temperature: 0.8
 parameters:
-  - key: lang
+  - key: language
     input_type: string
     requirement: required
     description: 使用する自然言語
