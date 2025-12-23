@@ -35,7 +35,7 @@ system() {
 
   case $command in
     init | i)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe $RECIPE_DIR/system/spec-init.yaml
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe "$RECIPE_DIR/system/spec-init.yaml" --params language="$1"
       ;;
     background | b)
       goose run $GOOSE_PROVIDER_MODEL --name "SDD System background: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-background.yaml"
@@ -143,7 +143,7 @@ mode=$1
 shift
 case $mode in
   --system | -s)
-    system $1
+    system $*
     ;;
   --feature | -f)
     feature $1 $2
@@ -152,7 +152,7 @@ case $mode in
     tool $1
     ;;
   --version | -v)
-    echo '0.0.5'
+    echo '0.0.6'
     ;;
   --help | -h | *)
     echo 'Options:'
