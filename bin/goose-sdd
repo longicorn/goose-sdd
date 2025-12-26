@@ -6,13 +6,13 @@ RECIPE_DIR=${SELF_DIR}/../recipes
 PRJ_DIR=`pwd`
 PRJ_NAME=`basename $PRJ_DIR`
 
-DOCUMENT_PROVIDER=${DOCUMENT_PROVIDER:-$GOOSE_LEAD_PROVIDER}
-DOCUMENT_PROVIDER=${DOCUMENT_PROVIDER:-$GOOSE_PROVIDER}
-DOCUMENT_MODEL=${GOOSE_LEAD_MODEL:-$GOOSE_MODEL}
-DOCUMENT_MODEL=${DOCUMENT_MODEL:-default}
-CODING_PROVIDER=${CODING_PROVIDER:-$GOOSE_PROVIDER}
-CODING_MODEL=${GOOSE_CODING_MODEL:-$DOCUMENT_MODEL}
-GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
+GOOSE_SDD_DOCUMENT_PROVIDER=${GOOSE_SDD_DOCUMENT_PROVIDER:-$GOOSE_LEAD_PROVIDER}
+GOOSE_SDD_DOCUMENT_PROVIDER=${GOOSE_SDD_DOCUMENT_PROVIDER:-$GOOSE_PROVIDER}
+GOOSE_SDD_DOCUMENT_MODEL=${GOOSE_LEAD_MODEL:-$GOOSE_SDD_DOCUMENT_MODEL}
+GOOSE_SDD_DOCUMENT_MODEL=${GOOSE_SDD_DOCUMENT_MODEL:-default}
+GOOSE_SDD_CODING_PROVIDER=${GOOSE_SDD_CODING_PROVIDER:-$GOOSE_PROVIDER}
+GOOSE_SDD_CODING_MODEL=${GOOSE_SDD_CODING_MODEL:-$GOOSE_SDD_DOCUMENT_MODEL}
+GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
 
 tool() {
   command=$1
@@ -20,6 +20,8 @@ tool() {
 
   case $command in
     ask | a)
+      #GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_CODING_MODEL"
       goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/spec-ask.yaml --interactive
       ;;
     help | h | *)
@@ -106,23 +108,23 @@ feature() {
 
   case $command in
     init | i)
-      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       feature_goose_run init $feature_str
       ;;
     requirements | r)
-      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       feature_goose_run requirements $feature_str --interactive
       ;;
     design| d)
-      GOOSE_PROVIDER_MODEL="--provider $DOCUMENT_PROVIDER --model $DOCUMENT_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       feature_goose_run design $feature_str --interactive
       ;;
     tests | t)
-      GOOSE_PROVIDER_MODEL="--provider $CODING_PROVIDER --model $DOCUMENT_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       feature_goose_run tests $feature_str --interactive
       ;;
     code | c)
-      GOOSE_PROVIDER_MODEL="--provider $CODING_PROVIDER --model $CODING_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_CODING_MODEL"
       feature_goose_run code $feature_str --interactive
       ;;
     list | l)
@@ -152,7 +154,7 @@ case $mode in
     tool $1
     ;;
   --version | -v)
-    echo '0.0.7'
+    echo '0.0.8'
     ;;
   --help | -h | *)
     echo 'Options:'
