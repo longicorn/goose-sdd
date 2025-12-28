@@ -11,6 +11,7 @@ prompt: |
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Primary Target**: `docs/sdd/01_system_concept.md`
   - **Input Document 1**: `docs/sdd/00_product_background.md`
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
   - **Source Code**: プロジェクト全体のソースコード（既存機能の把握のため）
   - **Language Setting**: `docs/sdd/language`
 
