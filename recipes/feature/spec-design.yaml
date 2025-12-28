@@ -10,7 +10,6 @@ prompt: |
   # Context
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Primary Target**: `docs/sdd/{{ feature }}/02_design.md`
-  - **Feature Definition**: `docs/sdd/{{ feature }}/00_feature.md`
   - **Feature Requirements**: `docs/sdd/{{ feature }}/01_requirements.md`
   - **Product Background**: `docs/sdd/00_product_background.md`
   - **System Architecture**: `docs/sdd/02_system_architecture.md`
@@ -23,14 +22,14 @@ prompt: |
   ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
   1.  `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。指定がない場合は英語を使用します。
   2.  **Primary Target** (`docs/sdd/{{ feature }}/02_design.md`)の存在を確認し、ファイルが空でないかをチェックします。これにより、後続のフローが「新規作成」か「更新」かを判断します。
-  3.  **Context**にリストされているすべての入力ドキュメント（`00_feature.md`, `01_requirements.md`, `00_product_background.md`, `02_system_architecture.md`, `03_project_rules.md`）を読み込みます。ファイルが存在しない場合は、ユーザーにその旨を伝え、処理を停止してください。
+  3.  **Context**にリストされているすべての入力ドキュメント（`01_requirements.md`, `00_product_background.md`, `02_system_architecture.md`, `03_project_rules.md`）を読み込みます。ファイルが存在しない場合は、ユーザーにその旨を伝え、処理を停止してください。
 
   # Execution Flow
   上記の準備ステップの結果に基づき、以下のフローを実行します。
 
   ## A) Update Flow (更新フロー)
   > **Condition**: `docs/sdd/{{ feature }}/02_design.md` が存在し、内容が空でない場合。
-  1.  **現状分析**: 既存の`docs/sdd/{{ feature }}/02_design.md`の内容と、`00_feature.md`、`01_requirements.md`、`00_product_background.md`、`02_system_architecture.md`、`03_project_rules.md`、および既存のプロジェクトコード（関連するファイルがあれば）を比較分析し、変更が必要な箇所、矛盾点、不足している情報を特定します。
+  1.  **現状分析**: 既存の`docs/sdd/{{ feature }}/02_design.md`の内容と、`01_requirements.md`、`00_product_background.md`、`02_system_architecture.md`、`03_project_rules.md`、および既存のプロジェクトコード（関連するファイルがあれば）を比較分析し、変更が必要な箇所、矛盾点、不足している情報を特定します。
   2.  **対話による更新**: 分析結果を元に、ユーザーと対話し、ドキュメントをどのように更新すべきかを確認・議論します。この際、設計のトレードオフや代替案についても議論してください。
   3.  **ドキュメント更新**: 議論の結果に基づき、`docs/sdd/{{ feature }}/02_design.md`を更新します。設計内容には以下の項目を含めること。
       # 設計仕様書: <機能名>
@@ -42,7 +41,7 @@ prompt: |
 
   ## B) Creation Flow (新規作成フロー)
   > **Condition**: `docs/sdd/{{ feature }}/02_design.md` が存在しないか、内容が空の場合。
-  1.  **情報収集**: `00_feature.md`、`01_requirements.md`、`00_product_background.md`、`02_system_architecture.md`、`03_project_rules.md`、および既存のプロジェクトコード（関連するファイルがあれば）を分析し、`docs/sdd/{{ feature }}/02_design.md`を作成するために必要な情報を抽出します。
+  1.  **情報収集**: `01_requirements.md`、`00_product_background.md`、`02_system_architecture.md`、`03_project_rules.md`、および既存のプロジェクトコード（関連するファイルがあれば）を分析し、`docs/sdd/{{ feature }}/02_design.md`を作成するために必要な情報を抽出します。
   2.  **対話による定義**: 抽出した情報を元に、ユーザーと対話し、設計に記載すべき内容を定義します。設計のトレードオフや代替案についても議論してください。
   3.  **ドキュメント生成**: 議論の結果に基づき、`docs/sdd/{{ feature }}/02_design.md`を新規作成します。設計内容には以下の項目を含めること。
       # 設計仕様書: <機能名>

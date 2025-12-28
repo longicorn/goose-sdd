@@ -5,26 +5,26 @@ prompt: |
   あなたは優秀なプロダクトマネージャー兼ビジネスアナリストです。
 
   # Goal
-  このレシピの目標は、`docs/sdd/{{ feature }}/00_feature.md` に基づき、詳細な要求仕様書 (`docs/sdd/{{ feature }}/01_requirements.md`) を作成または更新することです。
+  このレシピの目標は、このレシピの目標は、`docs/sdd/{{ feature }}/sdd.yaml` に基づき、詳細な要求仕様書 (`docs/sdd/{{ feature }}/01_requirements.md`) を作成または更新することです。
 
   # Context
   このタスクを実行するために、以下のコンテキスト情報を参照します。
-  -   **Primary Target**: `docs/sdd/{{ feature }}/01_requirements.md`
-  -   **Input Document 1**: `docs/sdd/{{ feature }}/00_feature.md`
+  - **Primary Target**: `docs/sdd/{{ feature }}/01_requirements.md`
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
   -   **Language Setting**: `docs/sdd/language`
 
   # Pre-computation Steps
   ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
   1.  `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。指定がない場合は英語を使用します。
   2.  **Primary Target** (`docs/sdd/{{ feature }}/01_requirements.md`) の存在を確認し、ファイルが空でないかをチェックします。これにより、後続のフローが「新規作成」か「更新」かを判断します。
-  3.  **Input Document 1** (`docs/sdd/{{ feature }}/00_feature.md`) を読み込みます。このファイルが存在しない場合は、ユーザーに `init` レシピの実行を促し、処理を停止します。
+  3.  **Input Document 1** (`docs/sdd/{{ feature }}/sdd.yaml`) を読み込みます。このファイルが存在しない場合は、ユーザーに `init` レシピの実行を促し、処理を停止します。
 
   # Execution Flow
   上記の準備ステップの結果に基づき、以下のフローを実行します。
 
   ## A) Update Flow (更新フロー)
   > **Condition**: `docs/sdd/{{ feature }}/01_requirements.md` が存在し、内容が空でない場合。
-  1.  **現状分析**: 既存の `01_requirements.md` の内容と、`00_feature.md` の内容を比較分析し、変更が必要な箇所、矛盾点、不足している情報を特定します。
+  1.  **現状分析**: 既存の `01_requirements.md` の内容と、`sdd.yaml` の内容を比較分析し、変更が必要な箇所、矛盾点、不足している情報を特定します。
   2.  **対話による更新**: 分析結果を元に、ユーザーと対話し、ドキュメントをどのように更新すべきかを確認・議論します。
       -   既存の要求仕様書を基にインタビューを行い、変更点や追加点を明確にします。
       -   機能要件、非機能要件、ユースケースなどを適切に更新します。
@@ -32,7 +32,7 @@ prompt: |
 
   ## B) Creation Flow (新規作成フロー)
   > **Condition**: `docs/sdd/{{ feature }}/01_requirements.md` が存在しないか、内容が空の場合。
-  1.  **情報収集**: `00_feature.md` の内容を分析し、`01_requirements.md` を作成するために必要な情報を抽出します。
+  1.  **情報収集**: `sdd.yaml` の内容を分析し、`01_requirements.md` を作成するために必要な情報を抽出します。
   2.  **対話による定義**: 抽出した情報を元に、ユーザーと対話し、ドキュメントに記載すべき内容を定義します。
       -   解決したい課題は何か？
       -   具体的なユースケースは？
