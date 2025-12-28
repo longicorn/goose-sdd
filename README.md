@@ -31,7 +31,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 ## 使い方
 ラッパースクリプトを使用して、System (全体) と Feature (個別機能) のモードを切り替えて使用します。
 
-1. System Layer (全体設計)
+### System Layer (全体設計)
 
 - `goose-sdd --system init <language>`
   - language: `japanese`, `english`, etc
@@ -41,8 +41,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --system rules`
 - `goose-sdd --system glossary`
 
-2. Feature Layer (機能開発)
-
+### Feature Layer (機能開発)
 システムコンテキストに基づき、具体的な機能を開発します。
 
 - `goose-sdd --feature init <feature description>`
@@ -52,8 +51,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --feature code <feature name>`
 - `goose-sdd --feature list`
 
-3. Tool Layer
-
+### Tool Layer
 SDDの情報を読み込み、ユーザをサポートする機能を提供します。
 
 - `goose-sdd --tool ask`
