@@ -13,6 +13,7 @@ prompt: |
   - **Feature Design**: `docs/sdd/{{ feature }}/02_design.md`
   - **Feature Tests**: `docs/sdd/{{ feature }}/03_tests.md`
   - **Primary Target**: `docs/sdd/{{ feature }}/04_code.md` (コードのパスと実装意図を記録)
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
   - **Source Code**: プロジェクト全体のソースコード (既存のコードを読み込み、修正するため)
   - **Language Setting**: `docs/sdd/language`
 

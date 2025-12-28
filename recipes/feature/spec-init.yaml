@@ -13,6 +13,8 @@ prompt: |
   # Context
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Feature Target Directory**: `docs/sdd/{{ feature }}/`
+  - **Template File**: `recipes/templates/feature/sdd.yaml`
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
   - **Language Setting File**: `docs/sdd/language`
 
   # Pre-computation Steps
@@ -30,27 +32,43 @@ prompt: |
   > **Condition**: `Feature Target Directory` が存在する場合。
   1.  ユーザーに「フィーチャー '{{ feature }}' は既に存在します。」と報告します。
   2.  以下のファイルが存在するか確認し、もし不足しているファイルがあれば、それを作成するかユーザーに尋ねてください。
-      - `00_feature.md`
+      - `sdd.yaml`
+      - `spec.md`
       - `01_requirements.md`
       - `02_design.md`
       - `03_tests.md`
       - `04_code.md`
-  3.  `00_feature.md` の内容が `{{ feature }}` (機能名)と異なっている場合、更新するかユーザーに確認してください。
 
   ## B) New Feature Creation Flow (新規フィーチャー・フロー)
   > **Condition**: `Feature Target Directory` が存在しない場合。
   1.  `Feature Target Directory` を作成するコマンドを実行します。
-  2.  その中に以下のMarkdownファイルを作成するコマンドを実行します。
-      - `00_feature.md`
+  2.  `{{ feature }}` を元に、この機能の目的を1〜2文で要約（`summary`）します。
+  3. このyamlのテンプレートを利用します
+  ```yaml
+  summary: "<summary>"
+  # type: 'architecture'
+  # type: 'feature'
+  type:
+  tags: [] # Tags to improve searchability
+  load_contexts:
+    consult: false
+    system_reference: false
+    feature_reference: false
+  dependencies: [] # References to other related feature documentation
+  ```
+  4.  テンプレートの内容に含まれる `summary: "<summary>"` という行を、ステップ2で生成した要約を使って `summary: "生成された要約"` のように書き換えます。テンプレートの他の部分は一切変更してはいけません。
+  5.  書き換えた内容を、`Feature Target Directory` 内に `sdd.yaml` という名前で新しいファイルとして保存します。
+  6.  `Feature Target Directory` 内に、以下の空のファイルを作成します。
+      - `spec.md`
       - `01_requirements.md`
       - `02_design.md`
       - `03_tests.md`
       - `04_code.md`
-  3.  `00_feature.md` に、ユーザーが入力した `{{ feature }}` (機能名)を書き込みます。
 
   # Post-computation Steps
-  1.  **最終確認**: ユーザーへの報告と確認が完了したら、`Feature Target Directory` の初期化または更新が完了したことを伝えます。
-  2.  **次のステップの案内**: 次は `spec-requirements` レシピを実行するよう促します。
+  1.  **最終確認**: ユーザーへの報告と確認が完了したら、`Feature Target Directory` の初期化または更新が完了したことを伝えます.
+  2.  **`sdd.yaml` の案内**: `docs/sdd/{{ feature }}/sdd.yaml` に本機能のメタデータが記述されています。このファイルを編集することで、AIの対話時にこのドキュメントを自動で読み込ませるなど、挙動をカスタマイズできます.
+  3.  **次のステップの案内**: 次は `spec-requirements` レシピを実行するよう促します.
 parameters:
   - key: feature
     input_type: string

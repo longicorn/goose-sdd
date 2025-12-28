@@ -13,6 +13,7 @@ prompt: |
   - **Input Document 1**: `docs/sdd/00_product_background.md`
   - **Input Document 2**: `docs/sdd/01_system_concept.md`
   - **Input Document 3**: `docs/sdd/02_system_architecture.md`
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
   - **Source Code**: プロジェクト全体のソースコード（既存のLinter/Formatter設定、コーディングスタイル把握のため）
   - **Language Setting**: `docs/sdd/language`
 

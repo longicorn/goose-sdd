@@ -20,8 +20,7 @@ tool() {
 
   case $command in
     ask | a)
-      #GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_CODING_MODEL"
+      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/spec-ask.yaml --interactive
       ;;
     help | h | *)
@@ -37,6 +36,10 @@ system() {
 
   case $command in
     init | i)
+      if [ -z $1 ]; then
+        echo "Usage: system init <language>"
+        return 1
+      fi
       goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe "$RECIPE_DIR/system/spec-init.yaml" --params language="$1"
       ;;
     background | b)
@@ -154,7 +157,7 @@ case $mode in
     tool $1
     ;;
   --version | -v)
-    echo '0.0.8'
+    echo '0.0.9'
     ;;
   --help | -h | *)
     echo 'Options:'
