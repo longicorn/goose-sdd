@@ -91,13 +91,13 @@ feature_goose_run() {
 }
 
 feature_list() {
-  FILE_NAME='00_feature.md'
+  FILE_NAME='sdd.yaml'
   for dir_path in docs/sdd/*; do
     dir_name="$dir_path%/"
     target_file="$dir_path/$FILE_NAME"
     if [ -f "$target_file" ]; then
-        content=$(cat "$target_file")
-        echo "- $dir_name: $content"
+        content=$(cat "$target_file"|grep 'summary'|cut -d ':' -f2|cut -d ' ' -f2|sed 's/"//g')
+        echo "- $dir_path: $content"
     fi
   done
 }
@@ -157,7 +157,7 @@ case $mode in
     tool $1
     ;;
   --version | -v)
-    echo '0.0.9'
+    echo '0.0.10'
     ;;
   --help | -h | *)
     echo 'Options:'
