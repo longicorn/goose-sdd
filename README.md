@@ -19,11 +19,11 @@ $ git clone https://github.com/longicorn/goose-sdd
 
 ## 環境変数
 - ドキュメント処理用
-  - DOCUMENT_PROVIDER
-  - DOCUMENT_MODEL
+  - GOOSE_SDD_DOCUMENT_PROVIDER || GOOSE_LEAD_MODE
+  - GOOSE_SDD_DOCUMENT_MODEL || GOOSE_LEAD_PROVIDER
 - コーディング処理用
-  - CODING_PROVIDER
-  - CODING_MODEL
+  - GOOSE_SDD_CODING_PROVIDER || GOOSE_PROVIDER
+  - GOOSE_SDD_CODING_MODEL || GOOSE_MODEL
 - 未設定時
   - GOOSE_PROVIDER
   - GOOSE_MODEL
@@ -33,7 +33,8 @@ $ git clone https://github.com/longicorn/goose-sdd
 
 1. System Layer (全体設計)
 
-- `goose-sdd --system init`
+- `goose-sdd --system init <language>`
+  - language: japanese, english, etc
 - `goose-sdd --system background`
 - `goose-sdd --system concept`
 - `goose-sdd --system architecture`
@@ -48,6 +49,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --feature design <feature name>`
 - `goose-sdd --feature tests <feature name>`
 - `goose-sdd --feature code <feature name>`
+- `goose-sdd --feature list`
 
 3. Tool Layer
 SDDの情報を読み込み、ユーザをサポートする機能を提供します。
