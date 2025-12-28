@@ -38,8 +38,25 @@ prompt: |
 settings:
   temperature: 0.7
 extensions:
- - type: builtin
-   name: developer
-   display_name: Developer
-   timeout: 300
-   bundled: true
+- type: builtin
+  name: developer
+  description: ''
+  display_name: null
+  timeout: 300
+  bundled: null
+  available_tools: []
+- type: platform
+  name: todo
+  description: Enable a todo list for Goose so it can keep track of what it is doing
+  bundled: true
+  available_tools: []
+- type: platform
+  name: Extension Manager
+  description: Enable extension management tools for discovering, enabling, and disabling extensions
+  bundled: true
+  available_tools: []
+- type: platform
+  name: skills
+  description: Load and use skills from .claude/skills or .goose/skills directories
+  bundled: true
+  available_tools: []
