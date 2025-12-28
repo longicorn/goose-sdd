@@ -31,7 +31,8 @@ prompt: |
      - `02_system_architecture.md`
      - `03_project_rules.md`
      - `04_domain_glossary.md`
-  3. `docs/sdd/language` ファイルに、 {{language}} を書き込み、出力言語を設定します。このファイルが既に存在する場合は、上書き更新します。
+  3. {{language}} がない場合環境変数に言語が設定されている場合、それを{{language}}に設定してください。それでも決定できない場合は、英語を使用します。
+  4. `docs/sdd/language` ファイルに、 {{language}} を書き込み、出力言語を設定します。このファイルが既に存在する場合は、上書き更新します。
 
   # Post-computation Steps
   1. 完了したら、作成したディレクトリ構造とファイルが正常に初期化されたことを報告します。
