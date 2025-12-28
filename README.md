@@ -34,7 +34,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 1. System Layer (全体設計)
 
 - `goose-sdd --system init <language>`
-  - language: japanese, english, etc
+  - language: `japanese`, `english`, etc
 - `goose-sdd --system background`
 - `goose-sdd --system concept`
 - `goose-sdd --system architecture`
@@ -42,6 +42,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --system glossary`
 
 2. Feature Layer (機能開発)
+
 システムコンテキストに基づき、具体的な機能を開発します。
 
 - `goose-sdd --feature init <feature description>`
@@ -52,7 +53,9 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --feature list`
 
 3. Tool Layer
+
 SDDの情報を読み込み、ユーザをサポートする機能を提供します。
 
 - `goose-sdd --tool ask`
   - SDDの情報を読み込みユーザの質問に回答します。
+  - 読み込むドキュメントはsystemとfeatureの一部が対象となります。featureの読み込み動作を変更するには `docs/sdd/<feature>/sdd.yaml` を編集してください。
