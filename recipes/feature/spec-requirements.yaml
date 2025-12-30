@@ -10,7 +10,7 @@ prompt: |
   # Context
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Primary Target**: `docs/sdd/{{ feature }}/01_requirements.md`
-  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント、`dependencies` が空でなければ含まれているドキュメント。
   -   **Language Setting**: `docs/sdd/language`
 
   # Pre-computation Steps
