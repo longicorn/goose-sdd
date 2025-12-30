@@ -29,7 +29,8 @@ $ git clone https://github.com/longicorn/goose-sdd
   - GOOSE_MODEL
 
 ## 使い方
-ラッパースクリプトを使用して、System (全体) と Feature (個別機能) のモードを切り替えて使用します。
+[コンセプト](docs/concept/)で `goose-sdd` の私の考え方をまとめました。
+理解をすれば意図が分かりやすくなります。
 
 ### System Layer (全体設計)
 
