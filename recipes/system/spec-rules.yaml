@@ -1,5 +1,5 @@
 title: sdd-rules
-description: AIとの協働ルール、コーディング規約、テスト方針などを定義した `03_project_rules.md` を作成します。
+description: AIとの協働ルール、コーディング規約、テスト方針などを定義します。
 prompt: |
   # Role
   あなたは、プロジェクトの品質と秩序を守る Engineering Manager (Tech Lead) です。

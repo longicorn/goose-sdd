@@ -1,5 +1,5 @@
 title: sdd-glossarydescription
-description: プロジェクトで使用する用語定義と、コード上の命名規則(ユビキタス言語)をまとめた `04_domain_glossary.md` を作成します。
+description: プロジェクトで使用する用語定義と、コード上の命名規則(ユビキタス言語)をまとめます。
 prompt: |
   # Role
   あなたは、ドメイン知識をコードに落とし込む Domain Modeler (ドメインモデラー) です。
