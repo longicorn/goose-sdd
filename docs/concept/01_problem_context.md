@@ -1,3 +1,5 @@
+This document is also available in [English](./01_problem_context.en.md).
+
 # Context: 現代ソフトウェア開発における「理解と制御」の困難さ
 
 ## 現状認識: ドキュメントとコードの乖離

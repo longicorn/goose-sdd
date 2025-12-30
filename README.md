@@ -1,3 +1,5 @@
+This document is also available in [English](./README.en.md).
+
 # Goose-SDD
 goose-sdd は、AIエージェント Goose を使用して 仕様駆動開発 (SDD) を行うためのレシピ集およびラッパースクリプトです。ドキュメントとコードをAIによって同期させる開発サイクルを実現することを目標としている実験段階のソフトウェアです。
 
