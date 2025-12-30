@@ -1,3 +1,5 @@
+This document is also available in [English](./02_philosophy.en.md).
+
 # 問題の整理と解決策の提案
 [01_problem_context.md](/docs/concept/01_problem_context.md) で既存開発の問題をまとめてきた。ここではその問題に対する解決策をまとめる。
 
