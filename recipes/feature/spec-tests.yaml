@@ -15,6 +15,7 @@ prompt: |
   - **Feature Design**: `docs/sdd/{{ feature }}/02_design.md`
   - **Project Rules**: `docs/sdd/03_project_rules.md`
   - **Existing Test Code (Optional)**: プロジェクト内の既存テストディレクトリ（例: `src/tests/` や `tests/`）
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント、`dependencies` が空でなければ含まれているドキュメント。
   - **Language Setting**: `docs/sdd/language`
 
   # Pre-computation Steps

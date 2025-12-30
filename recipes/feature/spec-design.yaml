@@ -13,7 +13,7 @@ prompt: |
   - **Feature Requirements**: `docs/sdd/{{ feature }}/01_requirements.md`
   - **Product Background**: `docs/sdd/00_product_background.md`
   - **System Architecture**: `docs/sdd/02_system_architecture.md`
-  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント、`dependencies` が空でなければ含まれているドキュメント。
   - **Project Rules**: `docs/sdd/03_project_rules.md`
   - **Source Code**: プロジェクト全体のソースコード（関連するファイルがあれば参照）
   - **Language Setting**: `docs/sdd/language`

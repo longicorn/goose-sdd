@@ -14,7 +14,7 @@ prompt: |
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Feature Target Directory**: `docs/sdd/{{ feature }}/`
   - **Template File**: `recipes/templates/feature/sdd.yaml`
-  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント。
+  - **Input Documents**: `docs/sdd/`ディレクトリ配下の `sdd.yaml` で `load_contexts.system_reference: true` が設定されたドキュメント、`dependencies` が空でなければ含まれているドキュメント。
   - **Language Setting File**: `docs/sdd/language`
 
   # Pre-computation Steps
@@ -49,11 +49,11 @@ prompt: |
   # type: 'architecture'
   # type: 'feature'
   type:
-  tags: [] # Tags to improve searchability
   load_contexts:
     consult: false
     system_reference: false
     feature_reference: false
+  tags: [] # Tags to improve searchability
   dependencies: [] # References to other related feature documentation
   ```
   4.  テンプレートの内容に含まれる `summary: "<summary>"` という行を、ステップ2で生成した要約を使って `summary: "生成された要約"` のように書き換えます。テンプレートの他の部分は一切変更してはいけません。
