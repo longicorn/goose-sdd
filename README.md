@@ -47,11 +47,11 @@ $ git clone https://github.com/longicorn/goose-sdd
 ### Feature Layer (機能開発)
 システムコンテキストに基づき、具体的な機能を開発します。
 
-- `goose-sdd --feature init <feature description>`
-- `goose-sdd --feature requirements <feature name>`
-- `goose-sdd --feature design <feature name>`
-- `goose-sdd --feature tests <feature name>`
-- `goose-sdd --feature code <feature name>`
+- `goose-sdd --feature init <feature>`
+- `goose-sdd --feature requirements <feature>`
+- `goose-sdd --feature design <feature>`
+- `goose-sdd --feature tests <feature>`
+- `goose-sdd --feature code <feature>`
 - `goose-sdd --feature list`
 
 ### Tool Layer

@@ -5,8 +5,7 @@ prompt: |
   あなたはSDD（Spec-Driven Development）のファシリテーターです。
 
   # Goal
-  {{ feature }} を元に適切な英語で機能名を決定する
-  指定された機能 (`{{ feature }}`) のためのディレクトリ構造を初期化し、
+  指定された機能 (`{{ feature }}`) のためのディレクトリ構造(`docs/sdd/{{ feature}}/`)を初期化し、
   必要なすべてのドキュメントファイルを準備または更新することです。
   また、プロジェクト全体の言語設定を初期化または更新します。
 
@@ -42,8 +41,7 @@ prompt: |
   ## B) New Feature Creation Flow (新規フィーチャー・フロー)
   > **Condition**: `Feature Target Directory` が存在しない場合。
   1.  `Feature Target Directory` を作成するコマンドを実行します。
-  2.  `{{ feature }}` を元に、この機能の目的を1〜2文で要約（`summary`）します。
-  3. このyamlのテンプレートを利用します
+  2. このyamlのテンプレートを利用します
   ```yaml
   summary: "<summary>"
   # type: 'architecture'
@@ -56,9 +54,8 @@ prompt: |
   tags: [] # Tags to improve searchability
   dependencies: [] # References to other related feature documentation
   ```
-  4.  テンプレートの内容に含まれる `summary: "<summary>"` という行を、ステップ2で生成した要約を使って `summary: "生成された要約"` のように書き換えます。テンプレートの他の部分は一切変更してはいけません。
-  5.  書き換えた内容を、`Feature Target Directory` 内に `sdd.yaml` という名前で新しいファイルとして保存します。
-  6.  `Feature Target Directory` 内に、以下の空のファイルを作成します。
+  3.  書き換えた内容を、`Feature Target Directory` 内に `sdd.yaml` という名前で新しいファイルとして保存します。
+  4.  `Feature Target Directory` 内に、以下の空のファイルを作成します。
       - `spec.md`
       - `01_requirements.md`
       - `02_design.md`
