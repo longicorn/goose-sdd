@@ -157,7 +157,7 @@ case $mode in
     tool $1
     ;;
   --version | -v)
-    echo '0.0.10'
+    echo '0.0.11'
     ;;
   --help | -h | *)
     echo 'Options:'

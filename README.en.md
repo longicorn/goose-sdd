@@ -46,11 +46,11 @@ I have summarized my thoughts on `goose-sdd` in the [Concepts](docs/concept/) se
 ### Feature Layer (Feature Development)
 Develop specific features based on the system context.
 
-- `goose-sdd --feature init "<feature description>"`
-- `goose-sdd --feature requirements <feature name>`
-- `goose-sdd --feature design <feature name>`
-- `goose-sdd --feature tests <feature name>`
-- `goose-sdd --feature code <feature name>`
+- `goose-sdd --feature init "<feature>"`
+- `goose-sdd --feature requirements <feature>`
+- `goose-sdd --feature design <feature>`
+- `goose-sdd --feature tests <feature>`
+- `goose-sdd --feature code <feature>`
 - `goose-sdd --feature list`
 
 ### Tool Layer
