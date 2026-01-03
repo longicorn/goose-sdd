@@ -1,4 +1,4 @@
-title: sdd-tests
+title: sdd-test
 description: 設計仕様書に基づいてテストコードを作成、更新します。
 prompt: |
   # Role
