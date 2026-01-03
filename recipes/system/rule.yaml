@@ -1,4 +1,4 @@
-title: sdd-rules
+title: sdd-rule
 description: AIとの協働ルール、コーディング規約、テスト方針などを定義します。
 prompt: |
   # Role

@@ -1,4 +1,4 @@
-title: sdd-requirements
+title: sdd-requirement
 description: ユーザーへのヒアリングを通じて要求仕様書(requirements)を作成、更新します
 prompt: |
   # Role

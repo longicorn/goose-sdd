@@ -21,7 +21,7 @@ tool() {
   case $command in
     ask | a)
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/spec-ask.yaml --interactive
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/ask.yaml --interactive
       ;;
     help | h | *)
       echo '  ask(a): Product Consultant'
@@ -40,29 +40,29 @@ system() {
         echo "Usage: system init <language>"
         return 1
       fi
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe "$RECIPE_DIR/system/spec-init.yaml" --params language="$1"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe "$RECIPE_DIR/system/init.yaml" --params language="$1"
       ;;
     background | b)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System background: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-background.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System background: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/background.yaml"
       ;;
     concept | c)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System concept: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-concept.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System concept: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/concept.yaml"
       ;;
     architecture | a)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System architecture: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-architecture.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System architecture: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/architecture.yaml"
       ;;
-    rules | r)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System rules: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-rules.yaml"
+    rule | r)
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System rule: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/rule.yaml"
       ;;
     glossary | g)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System glossary: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/spec-glossary.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System glossary: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/glossary.yaml"
       ;;
     help | h | *)
       echo '  01. init(i)'
       echo '  02. background(b)'
       echo '  03. concept(t)'
       echo '  04. architecture(a)'
-      echo '  05. rules(r)'
+      echo '  05. rule(r)'
       echo '  05. glossary(g)'
       echo '      help'
       ;;
@@ -87,7 +87,7 @@ feature_goose_run() {
   goose_interactive=$1
   shift
 
-  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME" $goose_interactive --recipe "$RECIPE_DIR/feature/spec-$command.yaml" --params feature="$feature_str"
+  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME" $goose_interactive --recipe "$RECIPE_DIR/feature/$command.yaml" --params feature="$feature_str"
 }
 
 feature_list() {
@@ -114,17 +114,17 @@ feature() {
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       feature_goose_run init $feature_str
       ;;
-    requirements | r)
+    requirement | r)
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      feature_goose_run requirements $feature_str --interactive
+      feature_goose_run requirement $feature_str --interactive
       ;;
     design| d)
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
       feature_goose_run design $feature_str --interactive
       ;;
-    tests | t)
+    test | t)
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      feature_goose_run tests $feature_str --interactive
+      feature_goose_run test $feature_str --interactive
       ;;
     code | c)
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_CODING_MODEL"
@@ -135,9 +135,9 @@ feature() {
       ;;
     help | h | *)
       echo '  01. init(i) <feature text>'
-      echo '  02. requirements(r) <feature>'
+      echo '  02. requirement(r) <feature>'
       echo '  03. design(d) <feature>'
-      echo '  04. tests(t) <feature>'
+      echo '  04. test(t) <feature>'
       echo '  05. code(c) <feature>'
       echo '      help'
       ;;
