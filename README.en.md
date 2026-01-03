@@ -33,6 +33,12 @@ Please add `goose-sdd/bin` to your PATH.
 ## Usage
 I have summarized my thoughts on `goose-sdd` in the [Concepts](docs/concept/) section. Understanding this will make the intent clearer.
 
+### Setup
+
+- `goose-sdd --setup`
+
+This creates `$XDG_CONFIG_HOME/goose-sdd/recipes/`. Add MCPs to the extensions if necessary.
+
 ### System Layer (Overall Design)
 
 - `goose-sdd --system init <language>`
