@@ -34,6 +34,12 @@ $ git clone https://github.com/longicorn/goose-sdd
 [コンセプト](docs/concept/)で `goose-sdd` の私の考え方をまとめました。
 理解をすれば意図が分かりやすくなります。
 
+### Setup
+
+- `goose-sdd --setup`
+
+"$XDG_CONFIG_HOME/goose-sdd/recipies/" が作成されます。必要があればextensionsにMCPを追加してください。
+
 ### System Layer (全体設計)
 
 - `goose-sdd --system init <language>`

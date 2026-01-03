@@ -14,6 +14,49 @@ GOOSE_SDD_CODING_PROVIDER=${GOOSE_SDD_CODING_PROVIDER:-$GOOSE_PROVIDER}
 GOOSE_SDD_CODING_MODEL=${GOOSE_SDD_CODING_MODEL:-$GOOSE_SDD_DOCUMENT_MODEL}
 GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
 
+USER_CONFIG_TOP=${XDG_CONFIG_HOME:-$HOME/.config}
+USER_CONFIG_DIR="$USER_CONFIG_TOP/goose-sdd"
+CONFIG_TOP=${XDG_CACHE_HOME:-$HOME/.cache}
+CONFIG_DIR="$CONFIG_TOP/goose-sdd"
+
+setup() {
+  mkdir -p $USER_CONFIG_DIR/recipes
+  mkdir -p $USER_CONFIG_DIR/recipes/system
+  mkdir -p $USER_CONFIG_DIR/recipes/feature
+  mkdir -p $USER_CONFIG_DIR/recipes/tool
+  mkdir -p $CONFIG_DIR
+  mkdir -p $CONFIG_DIR/recipes/system
+  mkdir -p $CONFIG_DIR/recipes/feature
+  mkdir -p $CONFIG_DIR/recipes/tool
+
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/system/init.extention.yaml
+  yq '.extensions' $RECIPE_DIR/system/init.yaml >> $USER_CONFIG_DIR/recipes/system/init.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/system/background.extention.yaml
+  yq '.extensions' $RECIPE_DIR/system/background.yaml >> $USER_CONFIG_DIR/recipes/system/background.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/system/concept.extention.yaml
+  yq '.extensions' $RECIPE_DIR/system/concept.yaml >> $USER_CONFIG_DIR/recipes/system/concept.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/system/architecture.extention.yaml
+  yq '.extensions' $RECIPE_DIR/system/architecture.yaml >> $USER_CONFIG_DIR/recipes/system/architecture.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/system/rule.extention.yaml
+  yq '.extensions' $RECIPE_DIR/system/rule.yaml >> $USER_CONFIG_DIR/recipes/system/rule.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/system/glossary.extention.yaml
+  yq '.extensions' $RECIPE_DIR/system/glossary.yaml >> $USER_CONFIG_DIR/recipes/system/glossary.extention.yaml
+
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/feature/init.extention.yaml
+  yq '.extensions' $RECIPE_DIR/feature/init.yaml >> $USER_CONFIG_DIR/recipes/feature/init.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/feature/requirement.extention.yaml
+  yq '.extensions' $RECIPE_DIR/feature/requirement.yaml >> $USER_CONFIG_DIR/recipes/feature/requirement.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/feature/design.extention.yaml
+  yq '.extensions' $RECIPE_DIR/feature/design.yaml >> $USER_CONFIG_DIR/recipes/feature/design.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/feature/test.extention.yaml
+  yq '.extensions' $RECIPE_DIR/feature/test.yaml >> $USER_CONFIG_DIR/recipes/feature/test.extention.yaml
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/feature/code.extention.yaml
+  yq '.extensions' $RECIPE_DIR/feature/code.yaml >> $USER_CONFIG_DIR/recipes/feature/code.extention.yaml
+
+  echo 'extensions:' > $USER_CONFIG_DIR/recipes/tool/ask.extention.yaml
+  yq '.extensions' $RECIPE_DIR/tool/ask.yaml >> $USER_CONFIG_DIR/recipes/tool/ask.extention.yaml
+}
+
 tool() {
   command=$1
   shift
@@ -21,7 +64,9 @@ tool() {
   case $command in
     ask | a)
       GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/ask.yaml --interactive
+      extention_yaml=$USER_CONFIG_DIR/recipes/tool/ask.extention.yaml
+      yq eval ".extensions += load(\"$extention_yaml\").extensions" $RECIPE_DIR/tool/ask.yaml > $CONFIG_DIR/recipes/tool/ask.yaml
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $CONFIG_DIR/recipes/tool/ask.yaml --interactive
       ;;
     help | h | *)
       echo '  ask(a): Product Consultant'
@@ -34,28 +79,30 @@ system() {
   command=$1
   shift
 
+  extention_yaml=$USER_CONFIG_DIR/recipes/system/$command.extention.yaml
+  yq eval ".extensions += load(\"$extention_yaml\").extensions" $RECIPE_DIR/system/$command.yaml > $CONFIG_DIR/recipes/system/$command.yaml
   case $command in
     init | i)
       if [ -z $1 ]; then
         echo "Usage: system init <language>"
         return 1
       fi
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe "$RECIPE_DIR/system/init.yaml" --params language="$1"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System $command: $PRJ_NAME" --recipe "$CONFIG_DIR/recipes/system/$command.yaml" --params language="$1"
       ;;
     background | b)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System background: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/background.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System $command: $PRJ_NAME" --interactive --recipe "$CONFIG_DIR/recipes/system/$command.yaml"
       ;;
     concept | c)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System concept: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/concept.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System $command: $PRJ_NAME" --interactive --recipe "$CONFIG_DIR/recipes/system/$command.yaml"
       ;;
     architecture | a)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System architecture: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/architecture.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System $command: $PRJ_NAME" --interactive --recipe "$CONFIG_DIR/recipes/system/$command.yaml"
       ;;
     rule | r)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System rule: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/rule.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System $command: $PRJ_NAME" --interactive --recipe "$CONFIG_DIR/recipes/system/$command.yaml"
       ;;
     glossary | g)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System glossary: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/glossary.yaml"
+      goose run $GOOSE_PROVIDER_MODEL --name "SDD System glossary: $PRJ_NAME" --interactive --recipe "$CONFIG_DIR/recipes/system/$command.yaml"
       ;;
     help | h | *)
       echo '  01. init(i)'
@@ -147,6 +194,9 @@ feature() {
 mode=$1
 shift
 case $mode in
+  --setup)
+    setup
+    ;;
   --system | -s)
     system $*
     ;;
