@@ -52,6 +52,7 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --feature design <feature>`
 - `goose-sdd --feature tests <feature>`
 - `goose-sdd --feature code <feature>`
+- `goose-sdd --feature review <feature>`
 - `goose-sdd --feature list`
 
 ### Tool Layer
