@@ -10,7 +10,8 @@ goose-sdd は、AIエージェント Goose を使用して 仕様駆動開発 (S
 - Reverse SDD (逆設計): 既存のソースコードを解析して「システム設計図」や「機能仕様書」を逆生成できるため、既存プロジェクトへの導入が可能です。
 
 ## 前提条件
-[Goose CLI](https://github.com/block/goose) がインストール・設定されていること。
+- [Deno](https://deno.com/) がインストール・設定されていること。
+- [Goose CLI](https://github.com/block/goose) がインストール・設定されていること。
 
 ## インストール
 ```
@@ -33,6 +34,9 @@ $ git clone https://github.com/longicorn/goose-sdd
 ## 使い方
 [コンセプト](docs/concept/)で `goose-sdd` の私の考え方をまとめました。
 理解をすれば意図が分かりやすくなります。
+
+### Setup
+- `goose-sdd --setup`
 
 ### System Layer (全体設計)
 

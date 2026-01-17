@@ -1,176 +1,333 @@
-#/bin/bash
+#!/usr/bin/env -S deno run -A
 
-SELF_FPATH=$(realpath "$0");
-SELF_DIR=$(dirname "$SELF_FPATH");
-RECIPE_DIR=${SELF_DIR}/../recipes
-PRJ_DIR=`pwd`
-PRJ_NAME=`basename $PRJ_DIR`
+// deno-lint-ignore no-unversioned-import
+import * as path from "jsr:@std/path";
+// deno-lint-ignore no-unversioned-import
+import * as yaml from "jsr:@std/yaml";
+// deno-lint-ignore no-unversioned-import
+import * as collections from "jsr:@std/collections";
+// deno-lint-ignore no-unversioned-import
+import * as fs from "jsr:@std/fs";
 
-GOOSE_SDD_DOCUMENT_PROVIDER=${GOOSE_SDD_DOCUMENT_PROVIDER:-$GOOSE_LEAD_PROVIDER}
-GOOSE_SDD_DOCUMENT_PROVIDER=${GOOSE_SDD_DOCUMENT_PROVIDER:-$GOOSE_PROVIDER}
-GOOSE_SDD_DOCUMENT_MODEL=${GOOSE_LEAD_MODEL:-$GOOSE_SDD_DOCUMENT_MODEL}
-GOOSE_SDD_DOCUMENT_MODEL=${GOOSE_SDD_DOCUMENT_MODEL:-default}
-GOOSE_SDD_CODING_PROVIDER=${GOOSE_SDD_CODING_PROVIDER:-$GOOSE_PROVIDER}
-GOOSE_SDD_CODING_MODEL=${GOOSE_SDD_CODING_MODEL:-$GOOSE_SDD_DOCUMENT_MODEL}
-GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
+const env = Deno.env.toObject();
 
-tool() {
-  command=$1
-  shift
+const projectName = path.basename(Deno.cwd());
+const currentPath = path.fromFileUrl(import.meta.url);
+const currentDir = path.dirname(currentPath);
+const recipeDir = path.join(currentDir, '..', 'recipes');
+const userConfigTop = env.XDG_CONFIG_HOME || path.join(env.HOME, "/.config");
+const userConfigDir = path.join(userConfigTop, 'goose-sdd');
 
-  case $command in
-    ask | a)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD Tool ask: $PRJ_NAME" --recipe $RECIPE_DIR/tool/ask.yaml --interactive
-      ;;
-    help | h | *)
-      echo '  ask(a): Product Consultant'
-      echo '  help'
-      ;;
-  esac
+const cacheConfigTop = env.XDG_CACHE_HOME || path.join(env.HOME, "/.cache");
+const cacheConfigDir = path.join(cacheConfigTop, 'goose-sdd');
+
+const defaultProvider = env.GOOSE_PROVIDER;
+const defaultModel = env.GOOSE_MODEL;
+const documentProvider = env.GOOSE_SDD_DOCUMENT_PROVIDER || env.GOOSE_LEAD_PROVIDER || defaultProvider;
+const documentModel = env.GOOSE_SDD_DOCUMENT_MODEL || env.GOOSE_LEAD_MODEL || env.GOOSE_MODEL || 'default';
+const codingProvider = env.GOOSE_SDD_CODING_PROVIDER || env.GOOSE_PROVIDER;
+const codingModel = env.GOOSE_SDD_CODING_MODEL || defaultModel || 'default';
+
+async function createMergedYaml(baseYamlPath: string, userYamlPath: string, outputYamlPath: string) {
+  try {
+    const baseText = await Deno.readTextFile(baseYamlPath);
+    const userText = await Deno.readTextFile(userYamlPath);
+    const data1 = yaml.parse(baseText) as Record<string, unknown>;
+    const data2 = yaml.parse(userText) as Record<string, unknown>;
+
+    const mergedData = collections.deepMerge(data1, data2, { arrays: "replace" });
+    await Deno.writeTextFile(outputYamlPath, yaml.stringify(mergedData));
+  }
+  catch (error) {
+    const e = error as Error;
+    throw new Error(`YAML Merge Error (${baseYamlPath}, ${userYamlPath}): ${e.message}`);
+  }
 }
 
-system() {
-  command=$1
-  shift
+async function runGooseRecipe(type: string,
+                              recipeYamlPath: string,
+                              interactive: boolean,
+                              sessionName?: string,
+                              extraOptions?: string[],
+                             ): Promise<number> {
+  const args = ["run"];
+  switch (type) {
+    case "document": {
+      args.push("--provider", documentProvider);
+      args.push("--model", documentModel);
+      break;
+    }
+    case "coding": {
+      args.push("--provider", codingProvider);
+      args.push("--model", codingModel);
+      break;
+    }
+  }
 
-  case $command in
-    init | i)
-      if [ -z $1 ]; then
-        echo "Usage: system init <language>"
-        return 1
-      fi
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System init: $PRJ_NAME" --recipe "$RECIPE_DIR/system/init.yaml" --params language="$1"
-      ;;
-    background | b)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System background: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/background.yaml"
-      ;;
-    concept | c)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System concept: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/concept.yaml"
-      ;;
-    architecture | a)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System architecture: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/architecture.yaml"
-      ;;
-    rule | r)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System rule: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/rule.yaml"
-      ;;
-    glossary | g)
-      goose run $GOOSE_PROVIDER_MODEL --name "SDD System glossary: $PRJ_NAME" --interactive --recipe "$RECIPE_DIR/system/glossary.yaml"
-      ;;
-    help | h | *)
-      echo '  01. init(i)'
-      echo '  02. background(b)'
-      echo '  03. concept(t)'
-      echo '  04. architecture(a)'
-      echo '  05. rule(r)'
-      echo '  05. glossary(g)'
-      echo '      help'
-      ;;
-  esac
+  if (sessionName) {
+    args.push("--name", sessionName);
+  }
+  else {
+    args.push("--no-session");
+  }
+
+  args.push("--recipe", recipeYamlPath);
+
+  if (interactive) {
+    args.push("--interactive");
+  }
+
+  if (extraOptions) {
+    args.push(...extraOptions);
+  }
+
+  const command = new Deno.Command("goose", {
+    args: args,
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const { code } = await command.output();
+  return code;
 }
 
-feature_goose_run() {
-  command=$1
-  shift
-  if [ -z $command ]; then
-    echo "Usage: feature $command <feature>"
-    return 1
-  fi
+function setup() {
+  ["system", "feature", "tool"].forEach((dir) => {
+    Deno.mkdirSync(`${userConfigDir}/recipes/${dir}`, { recursive: true });
+    Deno.mkdirSync(`${cacheConfigDir}/recipes/${dir}`, { recursive: true });
+  });
 
-  feature_str=$1
-  shift
-  if [ -z $feature_str ]; then
-    echo "Usage: feature $command <feature>"
-    return 1
-  fi
+  let filePath;
+  ["init", "background", "concept", "architecture", "rule", "glossary"].forEach(async (name) => {
+    filePath = `${userConfigDir}/recipes/system/${name}.extention.yaml`;
+    if (!(await fs.exists(filePath))) {
+      await Deno.writeTextFile(filePath, "extensions:");
+    }
+  });
 
-  goose_interactive=$1
-  shift
+  ["init", "requirement", "design", "test", "code"].forEach(async (name) => {
+    filePath = `${userConfigDir}/recipes/feature/${name}.extention.yaml`;
+    if (!(await fs.exists(filePath))) {
+      await Deno.writeTextFile(filePath, "extensions:");
+    }
+  });
 
-  goose run $GOOSE_PROVIDER_MODEL --name "SDD Feature $command: $PRJ_NAME" $goose_interactive --recipe "$RECIPE_DIR/feature/$command.yaml" --params feature="$feature_str"
+  ["ask"].forEach(async (name) => {
+    filePath = `${userConfigDir}/recipes/tool/${name}.extention.yaml`;
+    if (!(await fs.exists(filePath))) {
+      await Deno.writeTextFile(filePath, "extensions:");
+    }
+  });
 }
 
-feature_list() {
-  FILE_NAME='sdd.yaml'
-  for dir_path in docs/sdd/*; do
-    dir_name="$dir_path%/"
-    target_file="$dir_path/$FILE_NAME"
-    if [ -f "$target_file" ]; then
-        content=$(cat "$target_file"|grep 'summary'|cut -d ':' -f2|cut -d ' ' -f2|sed 's/"//g')
-        echo "- $dir_path: $content"
-    fi
-  done
+async function system(args: string[]) {
+  function help() {
+    console.log("  01:init(i)");
+    console.log("  02:background(b)");
+    console.log("  03:concept(c)");
+    console.log("  04:architecture(a)");
+    console.log("  05:rule(r)");
+    console.log("  06:glossary(g)");
+    console.log("  help");
+  }
+
+  const subcommands:{ [key: string]: string } =  {
+    "init": "init",
+    "i": "init",
+    "background": "background",
+    "b": "background",
+    "concept": "concept",
+    "c": "concept",
+    "architecture": "architecture",
+    "a": "architecture",
+    "rule": "rule",
+    "r": "rule",
+    "glossary": "glossary",
+    "g": "glossary",
+    "help": "help",
+    "h": "help",
+  }
+  const subcommand = subcommands[args[0]];
+
+  try {
+    const extentionYaml = path.join(userConfigDir, "recipes/system", `${subcommand}.extention.yaml`);
+    const cacheYaml = path.join(cacheConfigDir, `recipes/system/${subcommand}.yaml`);
+    await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extentionYaml, cacheYaml);
+    const sessionName = `SDD System ${subcommand}: ${projectName}`;
+
+    switch (subcommand) {
+      case "init": {
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", "language=ja"]);
+        break;
+      }
+      case "background":
+      case "concept":
+      case "architecture":
+      case "rule": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName);
+        break;
+      }
+      case "help":
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (_) {
+    help();
+  }
 }
 
-feature() {
-  command=$1
-  shift
+async function feature(args: string[]) {
+  function help() {
+    console.log("  01:init(i) <feature>");
+    console.log("  02:requirement(r) <feature>");
+    console.log("  03:design(d) <feature>");
+    console.log("  04:test(t) <feature>");
+    console.log("  05:code(c) <feature>");
+    console.log("  06:review(R) <feature>");
+    console.log("  list: print feature list");
+    console.log("  help");
+  }
 
-  feature_str=$1
-  shift
+  async function list() {
+    for await (const entry of fs.expandGlob("docs/sdd/*/sdd.yaml")) {
+      const pathParts = entry.path.split('/')
+      pathParts.pop();
+      const featureName = pathParts.pop();
+      console.log(`- ${featureName}`);
+    }
+    return;
+  }
 
-  case $command in
-    init | i)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      feature_goose_run init $feature_str
-      ;;
-    requirement | r)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      feature_goose_run requirement $feature_str --interactive
-      ;;
-    design| d)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_DOCUMENT_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      feature_goose_run design $feature_str --interactive
-      ;;
-    test | t)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_DOCUMENT_MODEL"
-      feature_goose_run test $feature_str --interactive
-      ;;
-    code | c)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_CODING_MODEL"
-      feature_goose_run code $feature_str --interactive
-      ;;
-    review | R)
-      GOOSE_PROVIDER_MODEL="--provider $GOOSE_SDD_CODING_PROVIDER --model $GOOSE_SDD_CODING_MODEL"
-      feature_goose_run review $feature_str --interactive
-      ;;
-    list | l)
-      feature_list
-      ;;
-    help | h | *)
-      echo '  01. init(i) <feature text>'
-      echo '  02. requirement(r) <feature>'
-      echo '  03. design(d) <feature>'
-      echo '  04. test(t) <feature>'
-      echo '  05. code(c) <feature>'
-      echo '  06. review(review) <feature>'
-      echo '      help'
-      ;;
-  esac
+  const subcommands:{ [key: string]: string } =  {
+    "init": "init",
+    "i": "init",
+    "requirement": "requirement",
+    "r": "requirement",
+    "design": "design",
+    "d": "design",
+    "test": "test",
+    "t": "test",
+    "code": "code",
+    "c": "code",
+    "review": "review",
+    "R": "review",
+    "list": "list",
+    "l": "list",
+    "help": "help",
+    "h": "help",
+  }
+  const subcommand = subcommands[args[0]];
+
+  try {
+    const extentionYaml = path.join(userConfigDir, "recipes/feature", `${subcommand}.extention.yaml`);
+    const cacheYaml = path.join(cacheConfigDir, `recipes/feature/${subcommand}.yaml`);
+    await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extentionYaml, cacheYaml);
+    const sessionName = `SDD Feature ${subcommand}: ${projectName}`;
+    const feature_name = args[1];
+
+    switch (subcommand) {
+      case "init": {
+        await runGooseRecipe("document", cacheYaml, false, sessionName, [feature_name]);
+        break;
+      }
+      case "requirement":
+      case "design": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName, [feature_name]);
+        break;
+      }
+      case "test":
+      case "code":
+      case "review": {
+        await runGooseRecipe("coding", cacheYaml, true, sessionName, [feature_name]);
+        break;
+      }
+      case "lit": {
+        list();
+        break;
+      }
+      case "help":
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (_) {
+    help();
+  }
 }
 
-mode=$1
-shift
-case $mode in
-  --system | -s)
-    system $*
-    ;;
-  --feature | -f)
-    feature $1 $2
-    ;;
-  --tool | -t)
-    tool $1
-    ;;
-  --version | -v)
-    echo '0.0.11'
-    ;;
-  --help | -h | *)
-    echo 'Options:'
-    echo '--system(-s) <command>'
-    system help
-    echo '--feature(-f) <command>'
-    feature help
-    echo '--tool(-t) <command>'
-    tool help
-    ;;
-esac
+async function tool(args: string[]) {
+  function help() {
+    console.log("  ask(a): Product Consultant");
+    console.log("  help");
+  }
+
+  try {
+    const extentionYaml = path.join(userConfigDir, 'recipes/tool/ask.extention.yaml');
+    const cacheYaml = path.join(cacheConfigDir, "recipes/tool/ask.yaml");
+    await createMergedYaml(`${recipeDir}/tool/ask.yaml`, extentionYaml, cacheYaml);
+
+    switch (args[0]) {
+      case "ask":
+      case "a": {
+        await runGooseRecipe("document", cacheYaml, true, `SDD Tool ask: ${projectName}`);
+        break;
+      }
+      case "help":
+      case "h":
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (_) {
+    help();
+  }
+}
+
+function help() {
+  console.log("--setup");
+  console.log("--system");
+  system(["help"]);
+  console.log("--feature");
+  feature(["help"]);
+  console.log("--tool");
+  tool(["help"]);
+}
+
+const args = Deno.args;
+const option = args.shift();
+switch (option) {
+  case "--setup": {
+    setup();
+    break;
+  }
+  case "--system":
+  case "-s": {
+    system(args);
+    break;
+  }
+  case "--feature":
+  case "-f": {
+    feature(args);
+    break;
+  }
+  case "--tool":
+  case "-t": {
+    tool(args);
+    break;
+  }
+  case "--version":
+  case "-v": {
+    console.log('0.1.0');
+    break;
+  }
+  default: {
+    help();
+  }
+}
