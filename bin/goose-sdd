@@ -1,0 +1,328 @@
+#!/usr/bin/env -S deno run -A
+
+// deno-lint-ignore no-unversioned-import
+import * as path from "jsr:@std/path";
+// deno-lint-ignore no-unversioned-import
+import * as yaml from "jsr:@std/yaml";
+// deno-lint-ignore no-unversioned-import
+import * as collections from "jsr:@std/collections";
+// deno-lint-ignore no-unversioned-import
+import * as fs from "jsr:@std/fs";
+
+const env = Deno.env.toObject();
+
+const projectName = path.basename(Deno.cwd());
+const currentPath = path.fromFileUrl(import.meta.url);
+const currentDir = path.dirname(currentPath);
+const recipeDir = path.join(currentDir, '..', 'recipes');
+const userConfigTop = env.XDG_CONFIG_HOME || path.join(env.HOME, "/.config");
+const userConfigDir = path.join(userConfigTop, 'goose-sdd');
+
+const cacheConfigTop = env.XDG_CACHE_HOME || path.join(env.HOME, "/.cache");
+const cacheConfigDir = path.join(cacheConfigTop, 'goose-sdd');
+
+const defaultProvider = env.GOOSE_PROVIDER;
+const defaultModel = env.GOOSE_MODEL;
+const documentProvider = env.GOOSE_SDD_DOCUMENT_PROVIDER || env.GOOSE_LEAD_PROVIDER || defaultProvider;
+const documentModel = env.GOOSE_SDD_DOCUMENT_MODEL || env.GOOSE_LEAD_MODEL || env.GOOSE_MODEL || 'default';
+const codingProvider = env.GOOSE_SDD_CODING_PROVIDER || env.GOOSE_PROVIDER;
+const codingModel = env.GOOSE_SDD_CODING_MODEL || defaultModel || 'default';
+
+async function createMergedYaml(baseYamlPath: string, userYamlPath: string, outputYamlPath: string) {
+  try {
+    const baseText = await Deno.readTextFile(baseYamlPath);
+    const userText = await Deno.readTextFile(userYamlPath);
+    const data1 = yaml.parse(baseText) as Record<string, unknown>;
+    const data2 = yaml.parse(userText) as Record<string, unknown>;
+
+    const mergedData = collections.deepMerge(data1, data2, { arrays: "replace" });
+    await Deno.writeTextFile(outputYamlPath, yaml.stringify(mergedData));
+  }
+  catch (error) {
+    const e = error as Error;
+    throw new Error(`YAML Merge Error (${baseYamlPath}, ${userYamlPath}): ${e.message}`);
+  }
+}
+
+async function runGooseRecipe(type: string,
+                              recipeYamlPath: string,
+                              interactive: boolean,
+                              sessionName?: string,
+                              extraOptions?: string[],
+                             ): Promise<number> {
+  const args = ["run"];
+  switch (type) {
+    case "document": {
+      args.push("--provider", documentProvider);
+      args.push("--model", documentModel);
+      break;
+    }
+    case "coding": {
+      args.push("--provider", codingProvider);
+      args.push("--model", codingModel);
+      break;
+    }
+  }
+
+  if (sessionName) {
+    args.push("--name", sessionName);
+  }
+  else {
+    args.push("--no-session");
+  }
+
+  args.push("--recipe", recipeYamlPath);
+
+  if (interactive) {
+    args.push("--interactive");
+  }
+
+  if (extraOptions) {
+    args.push(...extraOptions);
+  }
+
+  const command = new Deno.Command("goose", {
+    args: args,
+    stdin: "inherit",
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  const { code } = await command.output();
+  return code;
+}
+
+function setup() {
+  ["system", "feature", "tool"].forEach((dir) => {
+    Deno.mkdirSync(`${userConfigDir}/recipes/${dir}`, { recursive: true });
+    Deno.mkdirSync(`${cacheConfigDir}/recipes/${dir}`, { recursive: true });
+  });
+
+  let filePath;
+  ["init", "background", "concept", "architecture", "rule", "glossary"].forEach(async (name) => {
+    filePath = `${userConfigDir}/recipes/system/${name}.extention.yaml`;
+    if (!(await fs.exists(filePath))) {
+      await Deno.writeTextFile(filePath, "extensions:");
+    }
+  });
+
+  ["init", "requirement", "design", "test", "code"].forEach(async (name) => {
+    filePath = `${userConfigDir}/recipes/feature/${name}.extention.yaml`;
+    if (!(await fs.exists(filePath))) {
+      await Deno.writeTextFile(filePath, "extensions:");
+    }
+  });
+
+  ["ask"].forEach(async (name) => {
+    filePath = `${userConfigDir}/recipes/tool/${name}.extention.yaml`;
+    if (!(await fs.exists(filePath))) {
+      await Deno.writeTextFile(filePath, "extensions:");
+    }
+  });
+}
+
+async function system(args: string[]) {
+  function help() {
+    console.log("  01:init(i)");
+    console.log("  02:background(b)");
+    console.log("  03:concept(c)");
+    console.log("  04:architecture(a)");
+    console.log("  05:rule(r)");
+    console.log("  06:glossary(g)");
+    console.log("  help");
+  }
+
+  const subcommands:{ [key: string]: string } =  {
+    "init": "init",
+    "i": "init",
+    "background": "background",
+    "b": "background",
+    "concept": "concept",
+    "c": "concept",
+    "architecture": "architecture",
+    "a": "architecture",
+    "rule": "rule",
+    "r": "rule",
+    "glossary": "glossary",
+    "g": "glossary",
+    "help": "help",
+    "h": "help",
+  }
+  const subcommand = subcommands[args[0]];
+
+  try {
+    const extentionYaml = path.join(userConfigDir, "recipes/system", `${subcommand}.extention.yaml`);
+    const cacheYaml = path.join(cacheConfigDir, `recipes/system/${subcommand}.yaml`);
+    await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extentionYaml, cacheYaml);
+    const sessionName = `SDD System ${subcommand}: ${projectName}`;
+
+    switch (subcommand) {
+      case "init": {
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", "language=ja"]);
+        break;
+      }
+      case "background":
+      case "concept":
+      case "architecture":
+      case "rule": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName);
+        break;
+      }
+      case "help":
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (_) {
+    help();
+  }
+}
+
+async function feature(args: string[]) {
+  function help() {
+    console.log("  01:init(i) <feature>");
+    console.log("  02:requirement(r) <feature>");
+    console.log("  03:design(d) <feature>");
+    console.log("  04:test(t) <feature>");
+    console.log("  05:code(c) <feature>");
+    console.log("  06:review(R) <feature>");
+    console.log("  list: print feature list");
+    console.log("  help");
+  }
+
+  async function list() {
+    for await (const entry of fs.expandGlob("docs/sdd/*/sdd.yaml")) {
+      const pathParts = entry.path.split('/')
+      pathParts.pop();
+      const featureName = pathParts.pop();
+      console.log(`- ${featureName}`);
+    }
+    return;
+  }
+
+  const subcommands:{ [key: string]: string } =  {
+    "init": "init",
+    "i": "init",
+    "requirement": "requirement",
+    "r": "requirement",
+    "design": "design",
+    "d": "design",
+    "test": "test",
+    "t": "test",
+    "code": "code",
+    "c": "code",
+    "review": "review",
+    "R": "review",
+    "list": "list",
+    "l": "list",
+    "help": "help",
+    "h": "help",
+  }
+  const subcommand = subcommands[args[0]];
+
+  try {
+    const extentionYaml = path.join(userConfigDir, "recipes/feature", `${subcommand}.extention.yaml`);
+    const cacheYaml = path.join(cacheConfigDir, `recipes/feature/${subcommand}.yaml`);
+    await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extentionYaml, cacheYaml);
+    const sessionName = `SDD Feature ${subcommand}: ${projectName}`;
+    const feature_name = args[1];
+
+    switch (subcommand) {
+      case "init": {
+        await runGooseRecipe("document", cacheYaml, false, sessionName, [feature_name]);
+        break;
+      }
+      case "requirement":
+      case "design": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName, [feature_name]);
+        break;
+      }
+      case "test":
+      case "code":
+      case "review": {
+        await runGooseRecipe("coding", cacheYaml, true, sessionName, [feature_name]);
+        break;
+      }
+      case "lit": {
+        list();
+        break;
+      }
+      case "help":
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (_) {
+    help();
+  }
+}
+
+async function tool(args: string[]) {
+  function help() {
+    console.log("  ask(a): Product Consultant");
+    console.log("  help");
+  }
+
+  try {
+    const extentionYaml = path.join(userConfigDir, 'recipes/tool/ask.extention.yaml');
+    const cacheYaml = path.join(cacheConfigDir, "recipes/tool/ask.yaml");
+    await createMergedYaml(`${recipeDir}/tool/ask.yaml`, extentionYaml, cacheYaml);
+
+    switch (args[0]) {
+      case "ask":
+      case "a": {
+        await runGooseRecipe("document", cacheYaml, true, `SDD Tool ask: ${projectName}`);
+        break;
+      }
+      case "help":
+      case "h":
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (_) {
+    help();
+  }
+}
+
+function help() {
+  console.log("--setup");
+  console.log("--system");
+  system(["help"]);
+  console.log("--feature");
+  feature(["help"]);
+  console.log("--tool");
+  tool(["help"]);
+}
+
+const args = Deno.args;
+const option = args.shift();
+switch (option) {
+  case "--setup": {
+    setup();
+    break;
+  }
+  case "--system":
+  case "-s": {
+    system(args);
+    break;
+  }
+  case "--feature":
+  case "-f": {
+    feature(args);
+    break;
+  }
+  case "--tool":
+  case "-t": {
+    tool(args);
+    break;
+  }
+  default: {
+    help();
+  }
+}
