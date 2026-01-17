@@ -10,7 +10,8 @@ It is designed to be applicable not only to new projects but also to existing on
 - Reverse SDD: Capable of reverse-engineering "system design documents" and "feature specifications" by analyzing existing source code, allowing for introduction into existing projects.
 
 ## Prerequisites
-[Goose CLI](https://github.com/block/goose) must be installed and configured.
+- [Deno](https://deno.com/) must be installed and configured.
+- [Goose CLI](https://github.com/block/goose) must be installed and configured.
 
 ## Installation
 ```
@@ -32,6 +33,9 @@ Please add `goose-sdd/bin` to your PATH.
 
 ## Usage
 I have summarized my thoughts on `goose-sdd` in the [Concepts](docs/concept/) section. Understanding this will make the intent clearer.
+
+### Setup
+- `goose-sdd --setup`
 
 ### System Layer (Overall Design)
 
