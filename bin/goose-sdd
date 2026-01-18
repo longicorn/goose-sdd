@@ -222,30 +222,35 @@ async function feature(args: string[]) {
   }
   const subcommand = subcommands[args[0]];
 
+  if (subcommand == "list") {
+    list();
+    return;
+  }
+
   try {
     const extentionYaml = path.join(userConfigDir, "recipes/feature", `${subcommand}.extention.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/feature/${subcommand}.yaml`);
-    await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extentionYaml, cacheYaml);
+    await createMergedYaml(`${recipeDir}/feature/${subcommand}.yaml`, extentionYaml, cacheYaml);
     const sessionName = `SDD Feature ${subcommand}: ${projectName}`;
     const feature_name = args[1];
 
     switch (subcommand) {
       case "init": {
-        await runGooseRecipe("document", cacheYaml, false, sessionName, [feature_name]);
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `feature=${feature_name}`]);
         break;
       }
       case "requirement":
       case "design": {
-        await runGooseRecipe("document", cacheYaml, true, sessionName, [feature_name]);
+        await runGooseRecipe("document", cacheYaml, true, sessionName, ["--params", `feature=${feature_name}`]);
         break;
       }
       case "test":
       case "code":
       case "review": {
-        await runGooseRecipe("coding", cacheYaml, true, sessionName, [feature_name]);
+        await runGooseRecipe("coding", cacheYaml, true, sessionName, ["--params", `feature=${feature_name}`]);
         break;
       }
-      case "lit": {
+      case "list": {
         list();
         break;
       }
@@ -325,7 +330,7 @@ switch (option) {
   }
   case "--version":
   case "-v": {
-    console.log('0.1.1');
+    console.log('0.1.2');
     break;
   }
   default: {
