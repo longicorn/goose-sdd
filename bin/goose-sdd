@@ -163,7 +163,8 @@ async function system(args: string[]) {
       case "background":
       case "concept":
       case "architecture":
-      case "rule": {
+      case "rule":
+      case "glossary": {
         await runGooseRecipe("document", cacheYaml, true, sessionName);
         break;
       }
