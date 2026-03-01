@@ -296,20 +296,21 @@ async function tool(args: string[]) {
   }
 }
 
-function help() {
+async function help() {
   console.log("--setup");
   console.log("--system");
-  system(["help"]);
+  await system(["help"]);
   console.log("--feature");
-  feature(["help"]);
+  await feature(["help"]);
   console.log("--tool");
-  tool(["help"]);
+  await tool(["help"]);
 }
 
 const args = Deno.args;
 const option = args.shift();
 switch (option) {
-  case "--setup": {
+  case "--setup":
+  case "setup": {
     setup();
     break;
   }
@@ -334,6 +335,6 @@ switch (option) {
     break;
   }
   default: {
-    help();
+    await help();
   }
 }
