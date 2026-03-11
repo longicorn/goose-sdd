@@ -292,14 +292,11 @@ async function tool(args: string[]) {
   }
 }
 
-async function help() {
+function help() {
   console.log("--setup");
-  console.log("--system");
-  await system(["help"]);
-  console.log("--feature");
-  await feature(["help"]);
-  console.log("--tool");
-  await tool(["help"]);
+  console.log("--system <subcommand>");
+  console.log("--feature <subcommand>");
+  console.log("--tool <subcommand>");
 }
 
 const args = Deno.args;
@@ -331,6 +328,6 @@ switch (option) {
     break;
   }
   default: {
-    await help();
+    help();
   }
 }
