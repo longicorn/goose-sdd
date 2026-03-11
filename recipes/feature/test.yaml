@@ -11,7 +11,7 @@ prompt: |
   # Context
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Primary Target**: `docs/sdd/{{ feature }}/03_tests.md`
-  - **Feature Requirements**: `docs/sdd/{{ feature }}/01_requirements.md`
+  - **Feature Requirements**: `docs/sdd/{{ feature }}/01_requirement.md`
   - **Feature Design**: `docs/sdd/{{ feature }}/02_design.md`
   - **Project Rules**: `docs/sdd/03_project_rules.md`
   - **Existing Test Code (Optional)**: プロジェクト内の既存テストディレクトリ（例: `src/tests/` や `tests/`）
@@ -21,7 +21,7 @@ prompt: |
   # Pre-computation Steps
   ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
   1. `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。指定がない場合は英語を使用します。
-  2. `docs/sdd/{{ feature }}/01_requirements.md` と `docs/sdd/{{ feature }}/02_design.md` を読み込みます。これらのファイルが存在しない場合、その旨を記録し、後続の実行フローでユーザーに通知し停止します。
+  2. `docs/sdd/{{ feature }}/01_requirement.md` と `docs/sdd/{{ feature }}/02_design.md` を読み込みます。これらのファイルが存在しない場合、その旨を記録し、後続の実行フローでユーザーに通知し停止します。
   3. `Primary Target` (`docs/sdd/{{ feature }}/03_tests.md`) の存在を確認し、ファイルが空でないかをチェックします。これにより、後続のフローが「新規作成」か「更新」かを判断します。
   4. プロジェクトのファイルシステムをスキャンし、`Existing Test Code (Optional)` に記載されているような既存のテストコードファイル（例: `tests/` ディレクトリ配下）を探索し、存在すればその内容を読み込んで分析します。
 
@@ -30,13 +30,13 @@ prompt: |
 
   ## A) Update Flow (更新フロー)
   > **Condition**: `docs/sdd/{{ feature }}/03_tests.md` が存在し、内容が空でない場合。
-  1. **現状分析**: 既存の`03_tests.md`の内容、読み込んだ既存テストコード、`01_requirements.md`、`02_design.md`、`03_project_rules.md`を比較分析します。変更、追加、削除が必要なテスト項目やテストコードを特定します。
+  1. **現状分析**: 既存の`03_tests.md`の内容、読み込んだ既存テストコード、`01_requirement.md`、`02_design.md`、`03_project_rules.md`を比較分析します。変更、追加、削除が必要なテスト項目やテストコードを特定します。
   2. **対話による更新提案**: 分析結果を元に、ユーザーに更新提案（例: 新しいテストケースの追加、既存テストの修正、不要なテストの削除）を提示し、対話を通じて合意を形成します。
   3. **ドキュメントおよびコードの更新**: ユーザーとの合意に基づき、`docs/sdd/{{ feature }}/03_tests.md` を更新し、必要に応じて既存のテストコードを修正または新規作成します。
 
   ## B) Creation Flow (新規作成フロー)
   > **Condition**: `docs/sdd/{{ feature }}/03_tests.md` が存在しないか、内容が空の場合。
-  1. **テストケースの検討**: `01_requirements.md`と`02_design.md`、`03_project_rules.md`、および読み込んだ既存テストコード（存在する場合）に基づいて、機能の要件と設計を満たす包括的なテストケースを検討します。
+  1. **テストケースの検討**: `01_requirement.md`と`02_design.md`、`03_project_rules.md`、および読み込んだ既存テストコード（存在する場合）に基づいて、機能の要件と設計を満たす包括的なテストケースを検討します。
   2. **対話による定義**: 検討したテストケースをユーザーに提示し、内容に過不足がないか、認識が正しいかを対話を通じて確認します。特に、単体テスト、結合テスト、E2Eテストのバランスについて議論します。
   3. **ドキュメントおよびコードの生成**: ユーザーとの合意に基づき、`docs/sdd/{{ feature }}/03_tests.md` を新規作成し、適切なテストディレクトリにテストコードファイルを生成します。
   4. **RED確認**: 生成したテストコードを実行し、「失敗すること（RED）」を確認します。これは、まだ実装が存在しないため、テストが正しく機能していることの証明となります。

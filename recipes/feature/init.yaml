@@ -33,7 +33,7 @@ prompt: |
   2.  以下のファイルが存在するか確認し、もし不足しているファイルがあれば、それを作成するかユーザーに尋ねてください。
       - `sdd.yaml`
       - `spec.md`
-      - `01_requirements.md`
+      - `01_requirement.md`
       - `02_design.md`
       - `03_tests.md`
       - `04_code.md`
@@ -57,7 +57,7 @@ prompt: |
   3.  書き換えた内容を、`Feature Target Directory` 内に `sdd.yaml` という名前で新しいファイルとして保存します。
   4.  `Feature Target Directory` 内に、以下の空のファイルを作成します。
       - `spec.md`
-      - `01_requirements.md`
+      - `01_requirement.md`
       - `02_design.md`
       - `03_tests.md`
       - `04_code.md`
@@ -65,7 +65,7 @@ prompt: |
   # Post-computation Steps
   1.  **最終確認**: ユーザーへの報告と確認が完了したら、`Feature Target Directory` の初期化または更新が完了したことを伝えます.
   2.  **`sdd.yaml` の案内**: `docs/sdd/{{ feature }}/sdd.yaml` に本機能のメタデータが記述されています。このファイルを編集することで、AIの対話時にこのドキュメントを自動で読み込ませるなど、挙動をカスタマイズできます.
-  3.  **次のステップの案内**: 次は `spec-requirements` レシピを実行するよう促します.
+  3.  **次のステップの案内**: 次は `spec-requirement` レシピを実行するよう促します.
 parameters:
   - key: feature
     input_type: string
