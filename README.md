@@ -38,17 +38,20 @@ $ git clone https://github.com/longicorn/goose-sdd
 ### Setup
 - `goose-sdd --setup`
 
-### System Layer (全体設計)
+### Macro / Micro Pattern
+大規模・業務レベル向け
+
+#### System Layer (全体設計)
 
 - `goose-sdd --system init <language>`
-  - language: `japanese`, `english`, etc
+  - language: `japanese`, `english`, etc.
 - `goose-sdd --system background`
 - `goose-sdd --system concept`
 - `goose-sdd --system architecture`
 - `goose-sdd --system rules`
 - `goose-sdd --system glossary`
 
-### Feature Layer (機能開発)
+#### Feature Layer (機能開発)
 システムコンテキストに基づき、具体的な機能を開発します。
 
 - `goose-sdd --feature init <feature>`
@@ -58,6 +61,23 @@ $ git clone https://github.com/longicorn/goose-sdd
 - `goose-sdd --feature code <feature>`
 - `goose-sdd --feature review <feature>`
 - `goose-sdd --feature list`
+
+### Direct / Vibe Pattern
+小規模・高速開発向け
+
+#### Implement Layer
+ドキュメントを最低限書く小規模な開発を行います。
+
+- `goose-sdd --implement init <language>`
+  - language: `japanese`, `english`, etc.
+- `goose-sdd --implement requirement`
+- `goose-sdd --implement approach`
+  - スキップ可能
+- `goose-sdd --implement test`
+  - スキップ可能
+- `goose-sdd --implement code`
+- `goose-sdd --implement review`
+  - スキップ可能
 
 ### Tool Layer
 SDDの情報を読み込み、ユーザをサポートする機能を提供します。
