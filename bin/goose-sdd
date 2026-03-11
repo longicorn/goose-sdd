@@ -292,14 +292,11 @@ async function tool(args: string[]) {
   }
 }
 
-async function help() {
+function help() {
   console.log("--setup");
-  console.log("--system");
-  await system(["help"]);
-  console.log("--feature");
-  await feature(["help"]);
-  console.log("--tool");
-  await tool(["help"]);
+  console.log("--system <subcommand>");
+  console.log("--feature <subcommand>");
+  console.log("--tool <subcommand>");
 }
 
 const args = Deno.args;
@@ -312,17 +309,17 @@ switch (option) {
   }
   case "--system":
   case "-s": {
-    system(args);
+    await system(args);
     break;
   }
   case "--feature":
   case "-f": {
-    feature(args);
+    await feature(args);
     break;
   }
   case "--tool":
   case "-t": {
-    tool(args);
+    await tool(args);
     break;
   }
   case "--version":
@@ -331,6 +328,6 @@ switch (option) {
     break;
   }
   default: {
-    await help();
+    help();
   }
 }
