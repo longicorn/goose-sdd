@@ -309,17 +309,17 @@ switch (option) {
   }
   case "--system":
   case "-s": {
-    system(args);
+    await system(args);
     break;
   }
   case "--feature":
   case "-f": {
-    feature(args);
+    await feature(args);
     break;
   }
   case "--tool":
   case "-t": {
-    tool(args);
+    await tool(args);
     break;
   }
   case "--version":
