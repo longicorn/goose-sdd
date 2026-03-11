@@ -89,7 +89,7 @@ prompt: |
   1. **最終確認**: 生成または更新したドキュメントをユーザーに提示し、最終的なレビューを依頼します。
   2. **次のステップの案内**: 作成した内容について、ユーザーに「チーム独自のローカルルールがあれば追加しますか？」と確認します。レビュー完了後、次に実行すべきレシピ（例: `spec-glossary`）をユーザーに案内します。
 settings:
-  temperature: 0.8
+  temperature: 0.1
 extensions:
 - type: builtin
   name: developer

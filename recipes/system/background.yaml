@@ -45,7 +45,7 @@ prompt: |
   1. 完了したら、作成/更新したドキュメントの概要を報告し、ユーザーに最終レビューを依頼します。
   2. 次に `spec-concept` レシピを実行するようユーザーに案内します。
 settings:
-  temperature: 0.8
+  temperature: 0.6
 extensions:
 - type: builtin
   name: developer

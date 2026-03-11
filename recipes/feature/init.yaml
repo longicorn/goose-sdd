@@ -72,7 +72,7 @@ parameters:
     requirement: required
     description: 対象となる機能名
 settings:
-  temperature: 0.8
+  temperature: 0.1
 extensions:
 - type: builtin
   name: developer

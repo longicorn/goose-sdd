@@ -98,7 +98,7 @@ prompt: |
   2. 作成したアーキテクチャが、`00_product_background.md` の制約（コスト、パフォーマンス要件など）と矛盾していないか自己チェックします。
   3. 作成したディレクトリ構造を報告し、次に `spec-rules` レシピを実行するようユーザーに案内します。settings:
 settings:
-  temperature: 0.8
+  temperature: 0.5
 extensions:
 - type: builtin
   name: developer
