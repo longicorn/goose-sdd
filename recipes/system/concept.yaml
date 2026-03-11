@@ -74,7 +74,7 @@ prompt: |
   2. 作成した内容が、`docs/sdd/00_product_background.md` の `Non-Goals`（やらないこと）に違反していないか自己チェックします。
   3. 次に `spec-architecture` レシピを実行するようユーザーに案内します。
 settings:
-  temperature: 0.8
+  temperature: 0.6
 extensions:
 - type: builtin
   name: developer
