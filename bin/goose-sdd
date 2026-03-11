@@ -154,7 +154,8 @@ async function system(args: string[]) {
 
     switch (subcommand) {
       case "init": {
-        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", "language=ja"]);
+        const language = args[1] || "ja";
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `language=${language}`]);
         break;
       }
       case "background":
@@ -300,7 +301,8 @@ async function implement(args: string[]) {
 
     switch (subcommand) {
       case "init": {
-        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", "language=ja"]);
+        const language = args[1] || "ja";
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `language=${language}`]);
         break;
       }
       case "requirement":

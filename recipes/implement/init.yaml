@@ -54,8 +54,9 @@ settings:
 parameters:
   - key: language
     input_type: string
-    requirement: required
+    requirement: optional
     description: 使用する自然言語
+    default: ja
 extensions:
 - type: builtin
   name: developer
