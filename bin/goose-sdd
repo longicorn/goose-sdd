@@ -144,9 +144,9 @@ async function system(args: string[]) {
     "help": "help",
     "h": "help",
   }
-  const subcommand = subcommands[args[0]];
 
   try {
+    const subcommand = subcommands[args[0]];
     const extensionYaml = path.join(userConfigDir, "recipes/system", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/system/${subcommand}.yaml`);
     await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extensionYaml, cacheYaml);
@@ -219,14 +219,14 @@ async function feature(args: string[]) {
     "help": "help",
     "h": "help",
   }
-  const subcommand = subcommands[args[0]];
-
-  if (subcommand == "list") {
-    list();
-    return;
-  }
 
   try {
+    const subcommand = subcommands[args[0]];
+    if (subcommand == "list") {
+      list();
+      return;
+    }
+
     const extensionYaml = path.join(userConfigDir, "recipes/feature", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/feature/${subcommand}.yaml`);
     await createMergedYaml(`${recipeDir}/feature/${subcommand}.yaml`, extensionYaml, cacheYaml);
@@ -247,10 +247,6 @@ async function feature(args: string[]) {
       case "code":
       case "review": {
         await runGooseRecipe("coding", cacheYaml, true, sessionName, ["--params", `feature=${feature_name}`]);
-        break;
-      }
-      case "list": {
-        list();
         break;
       }
       case "help":
@@ -293,9 +289,14 @@ async function implement(args: string[]) {
     "help": "help",
     "h": "help",
   }
-  const subcommand = subcommands[args[0]];
 
   try {
+    const subcommand = subcommands[args[0]];
+    if (!subcommand || subcommand === "help") {
+      help();
+      return;
+    }
+
     const extensionYaml = path.join(userConfigDir, "recipes/implement", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/implement/${subcommand}.yaml`);
     const sessionName = `SDD Implement ${subcommand}: ${projectName}`;
