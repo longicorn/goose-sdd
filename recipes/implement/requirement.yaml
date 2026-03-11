@@ -45,7 +45,10 @@ prompt: |
 
   # Post-computation Steps
   1. **最終確認**: 生成または更新したドキュメントの内容（ドラフト）をユーザーに提示し、ファイルに保存してよいか最終的な確認を依頼します。
-  2. **次のステップの案内**: 確認完了後、この要件を満たすための具体的な実装方針（ガードレール）を合意するために `goose-sdd --implement approach` を実行するよう案内します。
+  2. **次のステップの案内**: 以下のいずれかのアクションを取るようユーザーに案内します。
+     - 具体的な実装方針（ガードレール）を合意する場合は `goose-sdd --implement approach` を実行する。
+     - テストコードに進む場合は、`goose-sdd --implement test` を実行する。
+     - コーディングにそのまま進む場合は、`goose-sdd --implement code` を実行する。
 settings:
   temperature: 0.7
 extensions:

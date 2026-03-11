@@ -47,6 +47,8 @@ prompt: |
   2. 次のステップとして、以下のいずれかのアクションを取るようユーザーに案内します。
      - `docs/sdd/00_requirement.md` を手動で編集して要求を記述する。
      - AIと対話しながら要求を固めたい場合は、`goose-sdd --implement requirement` を実行する。
+     - 必要に応じてテスト駆動で進める場合は `goose-sdd --implement test` を実行する。
+     - コーディングにそのまま進む場合は、`goose-sdd --implement code` を実行する。
 settings:
   temperature: 0.8
 parameters:

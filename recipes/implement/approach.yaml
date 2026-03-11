@@ -48,7 +48,9 @@ prompt: |
 
   # Post-computation Steps
   1. **完了報告**: 実装方針が `01_approach.md` に保存され、ガードレールが確立したことを報告します。
-  2. **次のステップの案内**: いよいよ実装フェーズです。必要に応じてテスト駆動で進める場合は `goose-sdd --implement test` を、一気にコードを書く場合は `goose-sdd --implement code` を実行するようユーザーに案内します。
+  2. **次のステップの案内**: 以下のいずれかのアクションを取るようユーザーに案内します。
+     - 必要に応じてテスト駆動で進める場合は `goose-sdd --implement test` を実行する。
+     - すぐにコードを書く場合は `goose-sdd --implement code` を実行する。
 settings:
   temperature: 0.5
 extensions:
