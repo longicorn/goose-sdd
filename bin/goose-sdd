@@ -8,6 +8,7 @@ import * as yaml from "jsr:@std/yaml";
 import * as collections from "jsr:@std/collections";
 // deno-lint-ignore no-unversioned-import
 import * as fs from "jsr:@std/fs";
+import { parseArgs } from "jsr:@std/cli/parse-args";
 
 const env = Deno.env.toObject();
 
@@ -37,37 +38,23 @@ async function createMergedYaml(baseYamlPath: string, userYamlPath: string, outp
 
     const mergedData = collections.deepMerge(data1, data2, { arrays: "replace" });
     await Deno.writeTextFile(outputYamlPath, yaml.stringify(mergedData));
-  }
-  catch (error) {
+  } catch (error) {
     const e = error as Error;
     throw new Error(`YAML Merge Error (${baseYamlPath}, ${userYamlPath}): ${e.message}`);
   }
 }
 
-async function runGooseRecipe(type: string,
-                              recipeYamlPath: string,
-                              interactive: boolean,
-                              sessionName?: string,
-                              extraOptions?: string[],
-                             ): Promise<number> {
+async function runGooseRecipe(type: string, recipeYamlPath: string, interactive: boolean, sessionName?: string, extraOptions?: string[]): Promise<number> {
   const args = ["run"];
-  switch (type) {
-    case "document": {
-      args.push("--provider", documentProvider);
-      args.push("--model", documentModel);
-      break;
-    }
-    case "coding": {
-      args.push("--provider", codingProvider);
-      args.push("--model", codingModel);
-      break;
-    }
+  if (type === "document") {
+    args.push("--provider", documentProvider, "--model", documentModel);
+  } else if (type === "coding") {
+    args.push("--provider", codingProvider, "--model", codingModel);
   }
 
   if (sessionName) {
     args.push("--name", sessionName);
-  }
-  else {
+  } else {
     args.push("--no-session");
   }
 
@@ -92,328 +79,196 @@ async function runGooseRecipe(type: string,
 }
 
 async function setup() {
-  ["system", "feature", "implement", "tool"].forEach((dir) => {
-    Deno.mkdirSync(`${userConfigDir}/recipes/${dir}`, { recursive: true });
-    Deno.mkdirSync(`${cacheConfigDir}/recipes/${dir}`, { recursive: true });
-  });
-
-  const subcommandNames: [string, string[]][] = [
-    ["system",    ["init", "background", "concept", "architecture", "rule", "glossary"]],
-    ["feature",   ["init", "requirement", "design", "test", "code", "review"]],
+  const subcommandNames = [
+    ["system", ["init", "background", "concept", "architecture", "rule", "glossary"]],
+    ["feature", ["init", "requirement", "design", "test", "code", "review"]],
     ["implement", ["init", "requirement", "approach", "test", "code", "review"]],
-    ["tool",      ["ask"]],
-  ];
+    ["tool", ["ask"]],
+  ] as const;
 
   for (const [command, subcommands] of subcommandNames) {
+    Deno.mkdirSync(`${userConfigDir}/recipes/${command}`, { recursive: true });
+    Deno.mkdirSync(`${cacheConfigDir}/recipes/${command}`, { recursive: true });
+
     for (const subcommand of subcommands) {
       const filePath = `${userConfigDir}/recipes/${command}/${subcommand}.extension.yaml`;
-      if ((await fs.exists(filePath))) continue;
+      if (await fs.exists(filePath)) continue;
 
       const yamlText = await Deno.readTextFile(`${recipeDir}/${command}/${subcommand}.yaml`);
       const json = yaml.parse(yamlText) as Record<string, unknown>;
-      if (json["extensions"] === undefined) continue;
-      await Deno.writeTextFile(filePath, yaml.stringify({ extensions: json["extensions"] }));
+      if (json["extensions"]) {
+        await Deno.writeTextFile(filePath, yaml.stringify({ extensions: json["extensions"] }));
+      }
     }
   }
 }
 
-async function system(args: string[]) {
-  function help() {
-    console.log("  01:init(i)");
-    console.log("  02:background(b)");
-    console.log("  03:concept(c)");
-    console.log("  04:architecture(a)");
-    console.log("  05:rule(r)");
-    console.log("  06:glossary(g)");
-    console.log("  help");
-  }
+type RecipeType = "document" | "coding";
 
-  const subcommands:{ [key: string]: string } =  {
-    "init": "init",
-    "i": "init",
-    "background": "background",
-    "b": "background",
-    "concept": "concept",
-    "c": "concept",
-    "architecture": "architecture",
-    "a": "architecture",
-    "rule": "rule",
-    "r": "rule",
-    "glossary": "glossary",
-    "g": "glossary",
-    "help": "help",
-    "h": "help",
-  }
+interface CommandConfig {
+  step?: string; // Workflow execution order (e.g., "01", "02")
+  name: string; // The flag name, e.g., "init", "background"
+  type: RecipeType;
+  interactive: boolean;
+  getExtraOptions?: (positionalArgs: string[]) => string[];
+  customHandler?: (positionalArgs: string[]) => Promise<boolean>;
+}
 
-  try {
-    const subcommand = subcommands[args[0]];
-    const extensionYaml = path.join(userConfigDir, "recipes/system", `${subcommand}.extension.yaml`);
-    const cacheYaml = path.join(cacheConfigDir, `recipes/system/${subcommand}.yaml`);
-    await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extensionYaml, cacheYaml);
-    const sessionName = `SDD System ${subcommand}: ${projectName}`;
+// Map parsed flags to find which subcommand the user requested
+async function handleGroupCommand(groupName: string, parsedFlags: Record<string, any>, positionalArgs: string[], configs: CommandConfig[]) {
+  // Find which configuration flag is present in the parsed flags
+  const config = configs.find((c) => parsedFlags[c.name] === true);
 
-    switch (subcommand) {
-      case "init": {
-        const language = args[1] || "ja";
-        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `language=${language}`]);
-        break;
+  const help = () => {
+    console.log(`Usage: goose-sdd --${groupName} [OPTIONS] [ARGS...]`);
+    console.log("Workflow Steps (Options):");
+    configs.forEach((c) => {
+      let desc = `  `;
+      if (c.step) {
+        desc += `${c.step}: `;
       }
-      case "background":
-      case "concept":
-      case "architecture":
-      case "rule":
-      case "glossary": {
-        await runGooseRecipe("document", cacheYaml, true, sessionName);
-        break;
-      }
-      case "help":
-      default: {
-        help();
-        break;
-      }
+      desc += `--${c.name}`;
+      if (groupName === "feature" && c.name !== "list") desc += " <feature_name>";
+      console.log(desc);
+    });
+  };
+
+  if (!config) {
+    if (parsedFlags.help || parsedFlags.h) {
+      help();
+      return;
     }
-  }
-  catch (_) {
-    if (!subcommands[args[0]]) {
-      console.error("Error: unknown subcommand");
-    }
+    console.error(`Error: No valid action flag provided for --${groupName}.`);
     help();
-  }
-}
-
-async function feature(args: string[]) {
-  function help() {
-    console.log("  01:init(i) <feature>");
-    console.log("  02:requirement(r) <feature>");
-    console.log("  03:design(d) <feature>");
-    console.log("  04:test(t) <feature>");
-    console.log("  05:code(c) <feature>");
-    console.log("  06:review(R) <feature>");
-    console.log("  list: print feature list");
-    console.log("  help");
-  }
-
-  async function list() {
-    for await (const entry of fs.expandGlob("docs/sdd/*/sdd.yaml")) {
-      const pathParts = entry.path.split('/')
-      pathParts.pop();
-      const featureName = pathParts.pop();
-      console.log(`- ${featureName}`);
-    }
     return;
   }
 
-  const subcommands:{ [key: string]: string } =  {
-    "init": "init",
-    "i": "init",
-    "requirement": "requirement",
-    "r": "requirement",
-    "design": "design",
-    "d": "design",
-    "test": "test",
-    "t": "test",
-    "code": "code",
-    "c": "code",
-    "review": "review",
-    "R": "review",
-    "list": "list",
-    "l": "list",
-    "help": "help",
-    "h": "help",
+  if (config.customHandler) {
+    const handled = await config.customHandler(positionalArgs);
+    if (handled) return;
   }
 
-  try {
-    const subcommand = subcommands[args[0]];
-    if (subcommand == "list") {
-      list();
-      return;
-    }
+  const extensionYaml = path.join(userConfigDir, `recipes/${groupName}`, `${config.name}.extension.yaml`);
+  const cacheYaml = path.join(cacheConfigDir, `recipes/${groupName}/${config.name}.yaml`);
+  await createMergedYaml(`${recipeDir}/${groupName}/${config.name}.yaml`, extensionYaml, cacheYaml);
 
-    const extensionYaml = path.join(userConfigDir, "recipes/feature", `${subcommand}.extension.yaml`);
-    const cacheYaml = path.join(cacheConfigDir, `recipes/feature/${subcommand}.yaml`);
-    await createMergedYaml(`${recipeDir}/feature/${subcommand}.yaml`, extensionYaml, cacheYaml);
-    const sessionName = `SDD Feature ${subcommand}: ${projectName}`;
-    const feature_name = args[1];
+  const sessionName = `SDD ${groupName.charAt(0).toUpperCase() + groupName.slice(1)} ${config.name}: ${projectName}`;
+  const extraOptions = config.getExtraOptions ? config.getExtraOptions(positionalArgs) : [];
 
-    switch (subcommand) {
-      case "init": {
-        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `feature=${feature_name}`]);
-        break;
-      }
-      case "requirement":
-      case "design": {
-        await runGooseRecipe("document", cacheYaml, true, sessionName, ["--params", `feature=${feature_name}`]);
-        break;
-      }
-      case "test":
-      case "code":
-      case "review": {
-        await runGooseRecipe("coding", cacheYaml, true, sessionName, ["--params", `feature=${feature_name}`]);
-        break;
-      }
-      case "help":
-      default: {
-        help();
-        break;
-      }
-    }
-  }
-  catch (_) {
-    if (!subcommands[args[0]]) {
-      console.error("Error: unknown subcommand");
-    }
-    help();
-  }
+  await runGooseRecipe(config.type, cacheYaml, config.interactive, sessionName, extraOptions);
 }
 
-async function implement(args: string[]) {
-  function help() {
-    console.log("  01:init(i)");
-    console.log("  02:requirement(r)");
-    console.log("  03:approach(a)");
-    console.log("  04:test(t)");
-    console.log("  05:code(c)");
-    console.log("  06:review(R)");
-    console.log("  help");
-  }
+async function main() {
+  const flags = parseArgs(Deno.args, {
+    boolean: [
+      "setup", "system", "feature", "implement", "tool", "version", "help",
+      // Action flags across all groups
+      "init", "background", "concept", "architecture", "rule", "glossary",
+      "requirement", "design", "test", "code", "review", "list", "approach", "ask"
+    ],
+    alias: {
+      "system": "s",
+      "feature": "f",
+      "implement": "i", // note: -i is implement here (group level).
+      "tool": "t",
+      "version": "v",
+      "help": "h",
+      "background": "b",
+      "concept": "c",
+      "architecture": "a",
+      "rule": "r",
+      "glossary": "g",
+      "design": "d",
+      "list": "l",
+    },
+  });
 
-  const subcommands:{ [key: string]: string } =  {
-    "init": "init",
-    "i": "init",
-    "requirement": "requirement",
-    "r": "requirement",
-    "approach": "approach",
-    "a": "approach",
-    "test": "test",
-    "t": "test",
-    "code": "code",
-    "c": "code",
-    "review": "review",
-    "R": "review",
-    "help": "help",
-    "h": "help",
-  }
+  const positionalArgs = flags._.map(String);
 
-  try {
-    const subcommand = subcommands[args[0]];
-    const extensionYaml = path.join(userConfigDir, "recipes/implement", `${subcommand}.extension.yaml`);
-    const cacheYaml = path.join(cacheConfigDir, `recipes/implement/${subcommand}.yaml`);
-    const sessionName = `SDD Implement ${subcommand}: ${projectName}`;
-    await createMergedYaml(`${recipeDir}/implement/${subcommand}.yaml`, extensionYaml, cacheYaml);
-
-    switch (subcommand) {
-      case "init": {
-        const language = args[1] || "ja";
-        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `language=${language}`]);
-        break;
-      }
-      case "requirement":
-      case "approach": {
-        await runGooseRecipe("document", cacheYaml, true, sessionName);
-        break;
-      }
-      case "test":
-      case "code":
-      case "review": {
-        await runGooseRecipe("coding", cacheYaml, true, sessionName);
-        break;
-      }
-      case "help":
-      default: {
-        help();
-        break;
-      }
-    }
-  }
-  catch (_) {
-    if (!subcommands[args[0]]) {
-      console.error("Error: unknown subcommand");
-    }
-    help();
-  }
-}
-
-async function tool(args: string[]) {
-  function help() {
-    console.log("  ask(a): Product Consultant");
-    console.log("  help");
-  }
-
-  const subcommands:{ [key: string]: string } =  {
-    "ask": "ask",
-    "a": "ask",
-    "help": "help",
-    "h": "help",
-  }
-
-  try {
-    const subcommand = subcommands[args[0]];
-    const extensionYaml = path.join(userConfigDir, "recipes/tool", `${subcommand}.extension.yaml`);
-    const cacheYaml = path.join(cacheConfigDir, "recipes/tool/ask.yaml");
-    await createMergedYaml(`${recipeDir}/tool/ask.yaml`, extensionYaml, cacheYaml);
-
-    switch (subcommand) {
-      case "ask": {
-        await runGooseRecipe("document", cacheYaml, true, `SDD Tool ask: ${projectName}`);
-        break;
-      }
-      case "help":
-      default: {
-        help();
-        break;
-      }
-    }
-  }
-  catch (_) {
-    if (!subcommands[args[0]]) {
-      console.error("Error: unknown subcommand");
-    }
-    help();
-  }
-}
-
-function help() {
-  console.log("--setup");
-  console.log("--system <subcommand>");
-  console.log("--feature <subcommand>");
-  console.log("--implement <subcommand>");
-  console.log("--tool <subcommand>");
-}
-
-const args = Deno.args;
-const option = args.shift();
-switch (option) {
-  case "--setup": {
+  if (flags.setup) {
     await setup();
-    console.log(`If necessary, please add additional settings in \"${userConfigDir}\".`);
-    break;
+    console.log(`If necessary, please add additional settings in "${userConfigDir}".`);
+    return;
   }
-  case "--system":
-  case "-s": {
-    await system(args);
-    break;
-  }
-  case "--feature":
-  case "-f": {
-    await feature(args);
-    break;
-  }
-  case "--implement":
-  case "-i": {
-    await implement(args);
-    break;
-  }
-  case "--tool":
-  case "-t": {
-    await tool(args);
-    break;
-  }
-  case "--version":
-  case "-v": {
+
+  if (flags.version) {
     console.log('0.2.1');
-    break;
+    return;
   }
-  default: {
-    help();
+
+  if (flags.system) {
+    const configs: CommandConfig[] = [
+      { step: "01", name: "init", type: "document", interactive: false, getExtraOptions: (a) => ["--params", `language=${a[0] || "ja"}`] },
+      { step: "02", name: "background", type: "document", interactive: true },
+      { step: "03", name: "concept", type: "document", interactive: true },
+      { step: "04", name: "architecture", type: "document", interactive: true },
+      { step: "05", name: "rule", type: "document", interactive: true },
+      { step: "06", name: "glossary", type: "document", interactive: true },
+    ];
+    await handleGroupCommand("system", flags, positionalArgs, configs);
+    return;
   }
+
+  if (flags.feature) {
+    const configs: CommandConfig[] = [
+      { step: "01", name: "init", type: "document", interactive: false, getExtraOptions: (a) => ["--params", `feature=${a[0]}`] },
+      { step: "02", name: "requirement", type: "document", interactive: true, getExtraOptions: (a) => ["--params", `feature=${a[0]}`] },
+      { step: "03", name: "design", type: "document", interactive: true, getExtraOptions: (a) => ["--params", `feature=${a[0]}`] },
+      { step: "04", name: "test", type: "coding", interactive: true, getExtraOptions: (a) => ["--params", `feature=${a[0]}`] },
+      { step: "05", name: "code", type: "coding", interactive: true, getExtraOptions: (a) => ["--params", `feature=${a[0]}`] },
+      { step: "06", name: "review", type: "coding", interactive: true, getExtraOptions: (a) => ["--params", `feature=${a[0]}`] },
+      {
+        step: "list", name: "list", type: "document", interactive: false, customHandler: async () => {
+          for await (const entry of fs.expandGlob("docs/sdd/*/sdd.yaml")) {
+            const pathParts = entry.path.split('/');
+            pathParts.pop();
+            const featureName = pathParts.pop();
+            console.log(`- ${featureName}`);
+          }
+          return true;
+        }
+      },
+    ];
+    await handleGroupCommand("feature", flags, positionalArgs, configs);
+    return;
+  }
+
+  if (flags.implement) {
+    const configs: CommandConfig[] = [
+      { step: "01", name: "init", type: "document", interactive: false, getExtraOptions: (a) => ["--params", `language=${a[0] || "ja"}`] },
+      { step: "02", name: "requirement", type: "document", interactive: true },
+      { step: "03", name: "approach", type: "document", interactive: true },
+      { step: "04", name: "test", type: "coding", interactive: true },
+      { step: "05", name: "code", type: "coding", interactive: true },
+      { step: "06", name: "review", type: "coding", interactive: true },
+    ];
+    await handleGroupCommand("implement", flags, positionalArgs, configs);
+    return;
+  }
+
+  if (flags.tool) {
+    const configs: CommandConfig[] = [
+      { name: "ask", type: "document", interactive: true },
+    ];
+    await handleGroupCommand("tool", flags, positionalArgs, configs);
+    return;
+  }
+
+  // Help output if no group is matched
+  console.log("Usage: goose-sdd [GROUP_FLAG] [ACTION_FLAG] [ARGS...]");
+  console.log("");
+  console.log("Groups:");
+  console.log("  --setup");
+  console.log("  --system(-s)");
+  console.log("  --feature(-f)");
+  console.log("  --implement(-i)");
+  console.log("  --tool(-t)");
+  console.log("  --version(-v)");
+  console.log("");
+  console.log("Example:");
+  console.log("  goose-sdd --system --init");
+  console.log("  goose-sdd --feature --list");
+  console.log("  goose-sdd --feature --code my_feature");
 }
+
+await main();
