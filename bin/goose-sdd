@@ -400,7 +400,7 @@ switch (option) {
   }
   case "--version":
   case "-v": {
-    console.log('0.1.4');
+    console.log('0.2.0');
     break;
   }
   default: {
