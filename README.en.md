@@ -37,7 +37,10 @@ I have summarized my thoughts on `goose-sdd` in the [Concepts](docs/concept/) se
 ### Setup
 - `goose-sdd --setup`
 
-### System Layer (Overall Design)
+### Macro / Micro Pattern
+For large-scale and enterprise-level use
+
+#### System Layer (Overall Design)
 
 - `goose-sdd --system init <language>`
   - language: `japanese`, `english`, etc.
@@ -47,16 +50,33 @@ I have summarized my thoughts on `goose-sdd` in the [Concepts](docs/concept/) se
 - `goose-sdd --system rules`
 - `goose-sdd --system glossary`
 
-### Feature Layer (Feature Development)
+#### Feature Layer (Feature Development)
 Develop specific features based on the system context.
 
 - `goose-sdd --feature init "<feature>"`
-- `goose-sdd --feature requirements <feature>`
+- `goose-sdd --feature requirement <feature>`
 - `goose-sdd --feature design <feature>`
-- `goose-sdd --feature tests <feature>`
+- `goose-sdd --feature test <feature>`
 - `goose-sdd --feature code <feature>`
 - `goose-sdd --feature review <feature>`
 - `goose-sdd --feature list`
+
+### Direct / Vibe Pattern
+For small-scale and rapid development
+
+#### Implement Layer
+Performs small-scale development with minimal documentation.
+
+- `goose-sdd --implement init <language>`
+  - language: `japanese`, `english`, etc.
+- `goose-sdd --implement requirement`
+- `goose-sdd --implement approach`
+  - Can be skipped
+- `goose-sdd --implement test`
+  - Can be skipped
+- `goose-sdd --implement code`
+- `goose-sdd --implement review`
+  - Can be skipped
 
 ### Tool Layer
 Provides functions to support the user by reading SDD information.

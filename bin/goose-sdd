@@ -92,7 +92,7 @@ async function runGooseRecipe(type: string,
 }
 
 async function setup() {
-  ["system", "feature", "tool"].forEach((dir) => {
+  ["system", "feature", "implement", "tool"].forEach((dir) => {
     Deno.mkdirSync(`${userConfigDir}/recipes/${dir}`, { recursive: true });
     Deno.mkdirSync(`${cacheConfigDir}/recipes/${dir}`, { recursive: true });
   });
@@ -100,6 +100,7 @@ async function setup() {
   const subcommandNames: [string, string[]][] = [
     ["system",    ["init", "background", "concept", "architecture", "rule", "glossary"]],
     ["feature",   ["init", "requirement", "design", "test", "code", "review"]],
+    ["implement", ["init", "requirement", "approach", "test", "code", "review"]],
     ["tool",      ["ask"]],
   ];
 
@@ -143,9 +144,9 @@ async function system(args: string[]) {
     "help": "help",
     "h": "help",
   }
-  const subcommand = subcommands[args[0]];
 
   try {
+    const subcommand = subcommands[args[0]];
     const extensionYaml = path.join(userConfigDir, "recipes/system", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/system/${subcommand}.yaml`);
     await createMergedYaml(`${recipeDir}/system/${subcommand}.yaml`, extensionYaml, cacheYaml);
@@ -153,7 +154,8 @@ async function system(args: string[]) {
 
     switch (subcommand) {
       case "init": {
-        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", "language=ja"]);
+        const language = args[1] || "ja";
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `language=${language}`]);
         break;
       }
       case "background":
@@ -171,7 +173,8 @@ async function system(args: string[]) {
       }
     }
   }
-  catch (_) {
+  catch (e) {
+    console.error("Error:", e);
     help();
   }
 }
@@ -216,14 +219,14 @@ async function feature(args: string[]) {
     "help": "help",
     "h": "help",
   }
-  const subcommand = subcommands[args[0]];
-
-  if (subcommand == "list") {
-    list();
-    return;
-  }
 
   try {
+    const subcommand = subcommands[args[0]];
+    if (subcommand == "list") {
+      list();
+      return;
+    }
+
     const extensionYaml = path.join(userConfigDir, "recipes/feature", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/feature/${subcommand}.yaml`);
     await createMergedYaml(`${recipeDir}/feature/${subcommand}.yaml`, extensionYaml, cacheYaml);
@@ -246,10 +249,6 @@ async function feature(args: string[]) {
         await runGooseRecipe("coding", cacheYaml, true, sessionName, ["--params", `feature=${feature_name}`]);
         break;
       }
-      case "list": {
-        list();
-        break;
-      }
       case "help":
       default: {
         help();
@@ -257,7 +256,77 @@ async function feature(args: string[]) {
       }
     }
   }
-  catch (_) {
+  catch (e) {
+    console.error("Error:", e);
+    help();
+  }
+}
+
+async function implement(args: string[]) {
+  function help() {
+    console.log("  01:init(i)");
+    console.log("  02:requirement(r)");
+    console.log("  03:approach(a)");
+    console.log("  04:test(t)");
+    console.log("  05:code(c)");
+    console.log("  06:review(R)");
+    console.log("  help");
+  }
+
+  const subcommands:{ [key: string]: string } =  {
+    "init": "init",
+    "i": "init",
+    "requirement": "requirement",
+    "r": "requirement",
+    "approach": "approach",
+    "a": "approach",
+    "test": "test",
+    "t": "test",
+    "code": "code",
+    "c": "code",
+    "review": "review",
+    "R": "review",
+    "help": "help",
+    "h": "help",
+  }
+
+  try {
+    const subcommand = subcommands[args[0]];
+    if (!subcommand || subcommand === "help") {
+      help();
+      return;
+    }
+
+    const extensionYaml = path.join(userConfigDir, "recipes/implement", `${subcommand}.extension.yaml`);
+    const cacheYaml = path.join(cacheConfigDir, `recipes/implement/${subcommand}.yaml`);
+    const sessionName = `SDD Implement ${subcommand}: ${projectName}`;
+    await createMergedYaml(`${recipeDir}/implement/${subcommand}.yaml`, extensionYaml, cacheYaml);
+
+    switch (subcommand) {
+      case "init": {
+        const language = args[1] || "ja";
+        await runGooseRecipe("document", cacheYaml, false, sessionName, ["--params", `language=${language}`]);
+        break;
+      }
+      case "requirement":
+      case "approach": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName);
+        break;
+      }
+      case "test":
+      case "code":
+      case "review": {
+        await runGooseRecipe("coding", cacheYaml, true, sessionName);
+        break;
+      }
+      default: {
+        help();
+        break;
+      }
+    }
+  }
+  catch (e) {
+    console.error("Error:", e);
     help();
   }
 }
@@ -287,7 +356,8 @@ async function tool(args: string[]) {
       }
     }
   }
-  catch (_) {
+  catch (e) {
+    console.error("Error:", e);
     help();
   }
 }
@@ -296,6 +366,7 @@ function help() {
   console.log("--setup");
   console.log("--system <subcommand>");
   console.log("--feature <subcommand>");
+  console.log("--implement <subcommand>");
   console.log("--tool <subcommand>");
 }
 
@@ -317,6 +388,11 @@ switch (option) {
     await feature(args);
     break;
   }
+  case "--implement":
+  case "-i": {
+    await implement(args);
+    break;
+  }
   case "--tool":
   case "-t": {
     await tool(args);
@@ -324,7 +400,7 @@ switch (option) {
   }
   case "--version":
   case "-v": {
-    console.log('0.1.4');
+    console.log('0.2.0');
     break;
   }
   default: {
