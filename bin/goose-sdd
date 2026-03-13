@@ -173,8 +173,10 @@ async function system(args: string[]) {
       }
     }
   }
-  catch (e) {
-    console.error("Error:", e);
+  catch (_) {
+    if (!subcommands[args[0]]) {
+      console.error("Error: unknown subcommand");
+    }
     help();
   }
 }
@@ -256,8 +258,10 @@ async function feature(args: string[]) {
       }
     }
   }
-  catch (e) {
-    console.error("Error:", e);
+  catch (_) {
+    if (!subcommands[args[0]]) {
+      console.error("Error: unknown subcommand");
+    }
     help();
   }
 }
@@ -292,11 +296,6 @@ async function implement(args: string[]) {
 
   try {
     const subcommand = subcommands[args[0]];
-    if (!subcommand || subcommand === "help") {
-      help();
-      return;
-    }
-
     const extensionYaml = path.join(userConfigDir, "recipes/implement", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, `recipes/implement/${subcommand}.yaml`);
     const sessionName = `SDD Implement ${subcommand}: ${projectName}`;
@@ -319,14 +318,17 @@ async function implement(args: string[]) {
         await runGooseRecipe("coding", cacheYaml, true, sessionName);
         break;
       }
+      case "help":
       default: {
         help();
         break;
       }
     }
   }
-  catch (e) {
-    console.error("Error:", e);
+  catch (_) {
+    if (!subcommands[args[0]]) {
+      console.error("Error: unknown subcommand");
+    }
     help();
   }
 }
@@ -337,27 +339,35 @@ async function tool(args: string[]) {
     console.log("  help");
   }
 
+  const subcommands:{ [key: string]: string } =  {
+    "ask": "ask",
+    "a": "ask",
+    "help": "help",
+    "h": "help",
+  }
+
   try {
-    const extensionYaml = path.join(userConfigDir, 'recipes/tool/ask.extension.yaml');
+    const subcommand = subcommands[args[0]];
+    const extensionYaml = path.join(userConfigDir, "recipes/tool", `${subcommand}.extension.yaml`);
     const cacheYaml = path.join(cacheConfigDir, "recipes/tool/ask.yaml");
     await createMergedYaml(`${recipeDir}/tool/ask.yaml`, extensionYaml, cacheYaml);
 
-    switch (args[0]) {
-      case "ask":
-      case "a": {
+    switch (subcommand) {
+      case "ask": {
         await runGooseRecipe("document", cacheYaml, true, `SDD Tool ask: ${projectName}`);
         break;
       }
       case "help":
-      case "h":
       default: {
         help();
         break;
       }
     }
   }
-  catch (e) {
-    console.error("Error:", e);
+  catch (_) {
+    if (!subcommands[args[0]]) {
+      console.error("Error: unknown subcommand");
+    }
     help();
   }
 }
@@ -400,7 +410,7 @@ switch (option) {
   }
   case "--version":
   case "-v": {
-    console.log('0.2.0');
+    console.log('0.2.1');
     break;
   }
   default: {
