@@ -43,24 +43,24 @@ $ git clone https://github.com/longicorn/goose-sdd
 
 #### System Layer (全体設計)
 
-- `goose-sdd --system init <language>`
+- `goose-sdd --system --init <language>`
   - language: `japanese`, `english`, etc.
-- `goose-sdd --system background`
-- `goose-sdd --system concept`
-- `goose-sdd --system architecture`
-- `goose-sdd --system rules`
-- `goose-sdd --system glossary`
+- `goose-sdd --system --background`
+- `goose-sdd --system --concept`
+- `goose-sdd --system --architecture`
+- `goose-sdd --system --rules`
+- `goose-sdd --system --glossary`
 
 #### Feature Layer (機能開発)
 システムコンテキストに基づき、具体的な機能を開発します。
 
-- `goose-sdd --feature init <feature>`
-- `goose-sdd --feature requirements <feature>`
-- `goose-sdd --feature design <feature>`
-- `goose-sdd --feature tests <feature>`
-- `goose-sdd --feature code <feature>`
-- `goose-sdd --feature review <feature>`
-- `goose-sdd --feature list`
+- `goose-sdd --feature --init <feature>`
+- `goose-sdd --feature --requirements <feature>`
+- `goose-sdd --feature --design <feature>`
+- `goose-sdd --feature --tests <feature>`
+- `goose-sdd --feature --code <feature>`
+- `goose-sdd --feature --review <feature>`
+- `goose-sdd --feature --list`
 
 ### Direct / Vibe Pattern
 小規模・高速開発向け
@@ -68,20 +68,20 @@ $ git clone https://github.com/longicorn/goose-sdd
 #### Implement Layer
 ドキュメントを最低限書く小規模な開発を行います。
 
-- `goose-sdd --implement init <language>`
+- `goose-sdd --implement --init <language>`
   - language: `japanese`, `english`, etc.
-- `goose-sdd --implement requirement`
-- `goose-sdd --implement approach`
+- `goose-sdd --implement --requirement`
+- `goose-sdd --implement --approach`
   - スキップ可能
-- `goose-sdd --implement test`
+- `goose-sdd --implement --test`
   - スキップ可能
-- `goose-sdd --implement code`
-- `goose-sdd --implement review`
+- `goose-sdd --implement --code`
+- `goose-sdd --implement --review`
   - スキップ可能
 
 ### Tool Layer
 SDDの情報を読み込み、ユーザをサポートする機能を提供します。
 
-- `goose-sdd --tool ask`
+- `goose-sdd --tool --ask`
   - SDDの情報を読み込みユーザの質問に回答します。
   - 読み込むドキュメントはsystemとfeatureの一部が対象となります。featureの読み込み動作を変更するには `docs/sdd/<feature>/sdd.yaml` を編集してください。

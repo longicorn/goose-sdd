@@ -42,24 +42,24 @@ For large-scale and enterprise-level use
 
 #### System Layer (Overall Design)
 
-- `goose-sdd --system init <language>`
+- `goose-sdd --system --init <language>`
   - language: `japanese`, `english`, etc.
-- `goose-sdd --system background`
-- `goose-sdd --system concept`
-- `goose-sdd --system architecture`
-- `goose-sdd --system rules`
-- `goose-sdd --system glossary`
+- `goose-sdd --system --background`
+- `goose-sdd --system --concept`
+- `goose-sdd --system --architecture`
+- `goose-sdd --system --rules`
+- `goose-sdd --system --glossary`
 
 #### Feature Layer (Feature Development)
 Develop specific features based on the system context.
 
-- `goose-sdd --feature init "<feature>"`
-- `goose-sdd --feature requirement <feature>`
-- `goose-sdd --feature design <feature>`
-- `goose-sdd --feature test <feature>`
-- `goose-sdd --feature code <feature>`
-- `goose-sdd --feature review <feature>`
-- `goose-sdd --feature list`
+- `goose-sdd --feature --init "<feature>"`
+- `goose-sdd --feature --requirement <feature>`
+- `goose-sdd --feature --design <feature>`
+- `goose-sdd --feature --test <feature>`
+- `goose-sdd --feature --code <feature>`
+- `goose-sdd --feature --review <feature>`
+- `goose-sdd --feature --list`
 
 ### Direct / Vibe Pattern
 For small-scale and rapid development
@@ -67,20 +67,20 @@ For small-scale and rapid development
 #### Implement Layer
 Performs small-scale development with minimal documentation.
 
-- `goose-sdd --implement init <language>`
+- `goose-sdd --implement --init <language>`
   - language: `japanese`, `english`, etc.
-- `goose-sdd --implement requirement`
-- `goose-sdd --implement approach`
+- `goose-sdd --implement --requirement`
+- `goose-sdd --implement --approach`
   - Can be skipped
-- `goose-sdd --implement test`
+- `goose-sdd --implement --test`
   - Can be skipped
-- `goose-sdd --implement code`
-- `goose-sdd --implement review`
+- `goose-sdd --implement --code`
+- `goose-sdd --implement --review`
   - Can be skipped
 
 ### Tool Layer
 Provides functions to support the user by reading SDD information.
 
-- `goose-sdd --tool ask`
+- `goose-sdd --tool --ask`
   - Reads SDD information and answers user questions.
   - The documents read are part of the system and feature layers. To change the reading behavior for features, please edit `docs/sdd/<feature>/sdd.yaml`.
