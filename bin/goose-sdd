@@ -130,6 +130,10 @@ async function setup() {
     Deno.mkdirSync(toSubrecipe, { recursive: true });
   });
 
+  // gather サブレシピ用ディレクトリの作成
+  Deno.mkdirSync(`${userConfigDir}/recipes/analyze/gather`, { recursive: true });
+  Deno.mkdirSync(`${cacheConfigDir}/recipes/analyze/gather`, { recursive: true });
+
   const subcommandNames: [string, string[]][] = [
     ["system", [
       "init",
@@ -168,6 +172,27 @@ async function setup() {
         yaml.stringify({ extensions: json["extensions"] }),
       );
     }
+  }
+
+  // gather/* サブレシピの extension yaml を生成
+  const gatherSubRecipeDir = path.join(recipeDir, "analyze/gather");
+  const gatherFiles = Deno.readDir(gatherSubRecipeDir);
+  for await (const file of gatherFiles) {
+    if (!file.name.endsWith(".yaml")) continue;
+    const subRecipeName = file.name.replace(/\.yaml$/, "");
+    const filePath =
+      `${userConfigDir}/recipes/analyze/gather/${subRecipeName}.extension.yaml`;
+    if ((await fs.exists(filePath))) continue;
+
+    const yamlText = await Deno.readTextFile(
+      `${gatherSubRecipeDir}/${file.name}`,
+    );
+    const json = yaml.parse(yamlText) as Record<string, unknown>;
+    if (json["extensions"] === undefined) continue;
+    await Deno.writeTextFile(
+      filePath,
+      yaml.stringify({ extensions: json["extensions"] }),
+    );
   }
 
   const fromSubrecipe = path.join(recipeDir, "subrecipes");
@@ -455,11 +480,62 @@ async function analyze(args: string[]) {
         break;
       }
       case "gather": {
-        const featureName = args[1];
-        await runGooseRecipe("document", cacheYaml, true, sessionName, [
-          "--params",
-          `feature=${featureName}`,
-        ]);
+        if (args.length >= 3) {
+          const subRecipe = args[1];
+          const subRecipeCacheYaml = await prepareRecipe(
+            "analyze/gather",
+            subRecipe,
+          );
+          switch (subRecipe) {
+            case "database":
+            case "stack-inventory":
+            case "feature-catalog":
+            case "system-context": {
+              const featureName = args[2];
+              await runGooseRecipe("document", subRecipeCacheYaml, true, sessionName, [
+                "--params",
+                `feature=${featureName}`,
+              ]);
+              break;
+            }
+            case "codebase-analyzer": {
+              const featureName = args[2];
+              const extraParams = ["--params", `feature=${featureName}`];
+              if (args[3] !== undefined) {
+                extraParams.push("--params", `analysis_focus=${args[3]}`);
+              }
+              await runGooseRecipe(
+                "document",
+                subRecipeCacheYaml,
+                true,
+                sessionName,
+                extraParams,
+              );
+              break;
+            }
+            default: {
+              console.error(`Error: unknown gather sub-recipe: ${subRecipe}`);
+              help();
+              break;
+            }
+          }
+        } else if (args.length === 2) {
+          const command = args[1];
+          switch (command) {
+            case "infrastructure": {
+              const subRecipeCacheYaml = await prepareRecipe("analyze/gather", command);
+              await runGooseRecipe("document", subRecipeCacheYaml, false, sessionName);
+              break;
+            }
+            default: {
+              const featureName = command;
+              await runGooseRecipe("document", cacheYaml, true, sessionName, [
+                "--params", `feature=${featureName}`,
+              ]);
+              break;
+            }
+          }
+        }
         break;
       }
       case "help":

@@ -1,0 +1,64 @@
+version: "1.0.0"
+title: "Stack Inventory"
+description: "技術スタック、主要依存関係、正確なバージョンを棚卸しして後続解析の前提を整えます"
+
+instructions: |
+  # Role
+  あなたは技術スタック調査の専門家です。
+
+  # Goal
+  対象の{{ feature}}に関する解析で必要になる言語、フレームワーク、主要ライブラリ、ツールチェインの正確なバージョンを特定し、後続解析の前提を整えます。
+
+  # Rules
+  - プロダクト理解のための解析です。批判や改善提案は行いません
+  - バージョンは推測せず、定義ファイルから直接確認してください
+  - 複数アプリや複数サービスがある場合は、構成単位ごとに分けて整理してください
+
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1. `docs/sdd/language` を読み込み、出力言語を決定します
+  2. `docs/sdd/analyze/{{ feature }}/advice.md` と `docs/sdd/analyze/{{ feature }}/overview.md` を読み込み、既存情報や未完了事項を確認します
+  3. `docs/sdd/02_system_architecture.md` と `docs/sdd/analyze/system/` を必要に応じて確認します
+
+  # Context
+  ## STEP 1: 定義ファイルの特定
+  - パッケージマネージャやビルド定義ファイルを探します
+    - `Gemfile.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `go.mod`, `go.sum`, `Cargo.toml`, `pom.xml`, `build.gradle`, `pyproject.toml`, `requirements.txt`, `mix.exs` など
+
+  ## STEP 2: バージョン棚卸し
+  - 言語ランタイム、フレームワーク、主要ライブラリ、ビルドツール、テスト基盤を整理します
+  - 複数のサブプロダクトがある場合は、どのディレクトリの定義ファイルかを明記します
+
+  ## STEP 3: 解析前提の整理
+  - 後続の gather サブレシピや静的解析で前提になる項目を整理します
+    - どの部分が Web か
+    - どの部分がバッチか
+    - DB や外部 API を持つか
+    - どの言語系ツールを選ぶべきか
+
+  ## STEP 4: 保存
+  - 結果を `docs/sdd/analyze/{{ feature }}/stack/overview.md` に保存してください
+  - 必要に応じて `docs/sdd/analyze/{{ feature }}/overview.md` と `advice.md` に反映してください
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "情報を収集する対象の機能名やスコープ"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+  - type: platform
+    name: summarize
+    description: Load files/directories and get an LLM summary in a single call
+    display_name: Summarize
+    timeout: 300
+    bundled: true
+    available_tools: []
+
+prompt: |
+  対象 {{ feature }} に関する技術スタックと正確なバージョンを棚卸ししてください。
+  定義ファイルを直接読み、後続解析で使えるように整理して保存してください。
