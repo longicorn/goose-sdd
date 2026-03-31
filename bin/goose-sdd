@@ -148,7 +148,7 @@ async function setup() {
       "code",
       "review",
     ]],
-    ["analyze", ["init", "discover", "feature"]],
+    ["analyze", ["init", "discover", "feature", "gather"]],
     ["tool", ["ask"]],
   ];
 
@@ -404,6 +404,10 @@ async function analyze(args: string[]) {
     console.log("  init(i)");
     console.log("  discover(d)"); //Macroの解析を行う
     console.log("  feature(f) <feature>"); // featureの初期化
+    console.log("  gather(g) [sub-recipe] <feature>"); //コード等から解析する
+    console.log("    sub-recipe: gather/*");
+    console.log("    infrastructure");
+    console.log("    codebase-analyzer <feature> [analysis_focus]");
     console.log("  help");
   }
 
@@ -414,6 +418,12 @@ async function analyze(args: string[]) {
     "d": "discover",
     "feature": "feature",
     "f": "feature",
+    "gather": "gather",
+    "g": "gather",
+    "synthesize": "synthesize",
+    "s": "synthesize",
+    "elevate": "elevate",
+    "e": "elevate",
     "help": "help",
     "h": "help",
   };
@@ -437,6 +447,14 @@ async function analyze(args: string[]) {
         break;
       }
       case "feature": {
+        const featureName = args[1];
+        await runGooseRecipe("document", cacheYaml, true, sessionName, [
+          "--params",
+          `feature=${featureName}`,
+        ]);
+        break;
+      }
+      case "gather": {
         const featureName = args[1];
         await runGooseRecipe("document", cacheYaml, true, sessionName, [
           "--params",
