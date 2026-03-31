@@ -1,0 +1,76 @@
+title: analyze-init
+description: "ソフトウェア考古学（逆SDD）のための全体ワークスペース（発掘現場）を初期化する"
+prompt: |
+  # Role
+  あなたはソフトウェア考古学の発掘現場の土台を構築するアシスタントです。
+
+  # Goal
+  このレシピの目標は、プロジェクト全体のドキュメント構造を初期化し、必須テンプレートファイルを作成し、出力言語を設定することです。
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1.  `docs/sdd/language`ファイルを読み込み、以降の出力言語を決定します。
+      ファイルが存在しない場合や内容が空の場合は、デフォルトで英語を使用します。
+  2. {{language}} がない場合環境変数に言語が設定されている場合、それを{{language}}に設定してください。それでも決定できない場合は、英語を使用します。
+  3. `docs/sdd/language` ファイルに、 {{language}} を書き込み、出力言語を設定します。このファイルが既に存在する場合は、上書き更新します。
+
+  # Context
+  ## Step 1: `--analyze init` check flow
+  - `docs/sdd/analyze/system/00_product_background.md` をチェックしてください
+  - 空でなければこのフローの処理は不要です。処理を終了してください
+
+  ## Step 2: ディレクトリの作成
+  - 以下のディレクトリを作成します
+    - `docs/sdd/analyze/system/as_is/`
+    - `docs/sdd/analyze/mosaic/`
+    - `docs/sdd/analyze/mosaic/system/`
+  - `docs/sdd/analyze/system` ディレクトリ内に、以下の各Markdownファイルがまだ存在しない場合、空の状態で新規作成します。
+     - `00_product_background.md`
+     - `01_system_concept.md`
+     - `02_system_architecture.md`
+     - `03_project_rules.md`
+     - `04_domain_glossary.md`
+     - `pain_points.md`
+
+  ## Step 3: 開発者の課題メモ・Inbox用の作成
+  1.  `docs/sdd/analyze/system/pain_points.md` にテンプレートを書き込んでください。
+     ```markdown
+     # 開発者の懸念・既知の負債 (Inbox)
+     ```
+
+  # Post-computation Steps
+  1. 完了したら、作成したディレクトリ構造とファイルが正常に初期化されたことを報告します。
+  2. **重要:** 以下の事項を案内すること。
+    - 「今後コードを読んでいて疑問や負債（これ使ってないのでは？等）を見つけたら、いつでも `docs/sdd/analyze/system/pain_points.md` にメモを残してください。」
+    - 「NotionやConfluence等の真実とそうでない情報が一体となっている情報は `docs/sdd/analyze/mosaic/` に配置してください。」
+  3. 次に `goose-sdd --analyze discover` を実行するようユーザーに案内します。
+settings:
+  temperature: 0.1
+parameters:
+  - key: language
+    input_type: string
+    requirement: optional
+    description: 使用する自然言語
+    default: ja
+extensions:
+- type: builtin
+  name: developer
+  description: ''
+  display_name: null
+  timeout: 300
+  bundled: null
+  available_tools: []
+- type: platform
+  name: todo
+  description: Enable a todo list for Goose so it can keep track of what it is doing
+  bundled: true
+  available_tools: []
+- type: platform
+  name: Extension Manager
+  description: Enable extension management tools for discovering, enabling, and disabling extensions
+  bundled: true
+  available_tools: []
+- type: platform
+  name: skills
+  description: Load and use skills from .claude/skills or .goose/skills directories
+  bundled: true
+  available_tools: []
