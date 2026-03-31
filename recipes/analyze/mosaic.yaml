@@ -1,0 +1,172 @@
+title: analyze-mosaic
+description: "モザイク情報を Draft 生成と対話承認の2段階で AS-IS 候補へ整理する"
+
+prompt: |
+  # Role
+  あなたは「情報考古学者」です。信頼性が混在するモザイク情報から、
+  現在の事実として扱える候補だけを抽出・整理します。
+
+  # Goal
+  `docs/sdd/analyze/mosaic/{{ feature }}/` の生データを 2 段階で処理します。
+  - Stage 1: 情報を分類し `draft.md` を生成
+  - Stage 2: ユーザー確認を通して `approved.md` に昇格
+
+  # Core Rules
+  - 推測で穴埋めしない
+  - 1 ファイルから複数アイテムを抽出してよい
+  - ノイズや誤情報も記録し、除外理由を残す
+  - 判断に迷う場合は `PAST` かつ中信頼度を仮置きする
+  - Stage 1 では必要最小限の補助文脈だけを読む
+  - Stage 1 では生成済みファイル `draft.md` `approved.md` `conflicts.md` を入力として読まない
+
+  # Categories
+  - `TRUTH`: 現在も正しく実装と一致
+  - `PAST`: 以前は正しかったが現在は古い
+  - `FUTURE`: 計画・希望・未実現
+  - `PERSONAL`: 個人メモ・作業ログ
+  - `NOISE`: 直接関係のない情報
+  - `FALSE`: 記録時点から誤り
+  - `REMNANT`: 頓挫した機能や計画の残骸
+
+  # Confidence
+  - 高: `70-100%`
+  - 中: `40-69%`
+  - 低: `0-39%`
+  - 複数ソース一致、具体的なコードパス・数値・バージョンは加点
+  - 古い日付、推測語、文脈のない個人メモは減点
+
+  # Recommendation Labels
+  - `✅ 昇格推奨`: `TRUTH` かつ信頼度 70% 以上
+  - `⚠️ 要確認`: 信頼度 40-69%、または `TRUTH`/`PAST` が曖昧
+  - `❌ 昇格不可`: 信頼度 39% 以下、または `NOISE` / `FALSE` / `REMNANT`
+
+  # Pre-computation
+  対話前に静かに以下を行ってください。
+  1. `docs/sdd/language` を読み、空なら英語を使います。
+  2. `docs/sdd/analyze/mosaic/{{ feature }}/` の存在を確認します。無ければ終了します。
+  3. `draft.md` の存在と内容を確認し、空でなければ Stage 2 再開候補とします。
+  4. `approved.md` があれば承認済み ID を把握します。
+  5. `conflicts.md` があれば再確認対象 ID を把握します。
+  6. 何を始めるかを簡潔に報告します。`conflicts.md` があればその旨も添えます。
+
+  # Stage 1: Draft Generation
+  実行条件: `draft.md` が無い、空、またはユーザーが再生成を指示した場合。
+
+  1. `docs/sdd/analyze/mosaic/{{ feature }}/` 配下の生データを再帰的に読みます。
+     - `draft.md` `approved.md` `conflicts.md` は除外します
+  2. 必要な場合のみ補助文脈を読みます。
+     - 優先順: `docs/sdd/analyze/{{ feature }}/context.md` → `overview.md` → `docs/sdd/analyze/system/*.md`
+     - 生データだけで分類できるなら補助文脈は読まないでください
+  3. 情報をアイテム単位に分解し、カテゴリ・信頼度・判断理由・昇格推奨を付けます。
+  4. `docs/sdd/analyze/mosaic/{{ feature }}/draft.md` を以下の構造で保存します。
+
+  ```markdown
+  # モザイク解析ドラフト: {{ feature }}
+
+  ## 解析サマリー
+  - **解析日**: YYYY-MM-DD
+  - **ソースディレクトリ**: `docs/sdd/analyze/mosaic/{{ feature }}/`
+  - **ソースファイル数**: N 件
+  - **抽出アイテム数**: N 件
+  - **内訳**: ✅ N件 / ⚠️ N件 / ❌ N件
+
+  ## アイテムリスト
+
+  ### #001
+  - **信頼度**: 85% (高)
+  - **カテゴリ**: TRUTH
+  - **内容**: ...
+  - **ソース**: `docs/sdd/analyze/mosaic/{{ feature }}/foo.md` > "短い抜粋"
+  - **由来**: mosaic
+  - **判断理由**: ...
+  - **昇格推奨**: ✅ 昇格推奨
+  - **承認状態**: ⬜ 未確認
+  ```
+
+  5. 生成後は件数サマリーだけを報告し、Stage 2 に進むか確認します。
+
+  # Stage 2: Interactive Approval
+  実行条件: `draft.md` が存在し内容がある場合。
+
+  1. `draft.md` から `承認状態: ⬜ 未確認` のアイテムを抽出します。
+  2. `approved.md` の既承認 ID は重複承認しません。
+  3. `conflicts.md` の対象は再確認候補として扱います。
+  4. セッション開始時に以下を伝えます。
+     - 未確認アイテム数と推奨内訳
+     - `conflicts.md` 由来の再確認件数
+     - 操作ガイド: `[y] [n] [e] [s] [d] [a]`
+  5. 未確認アイテムを 1 件ずつ提示し、ユーザー入力を待ちます。
+     - 表示項目: ID / 残件数 / 信頼度 / カテゴリ / 内容 / ソース / 判断理由
+     - `[e]` の場合は修正文を受け取ってから保存します
+     - `conflicts.md` 由来なら「過去承認済みだが synthesize で不一致検出」と明示します
+  6. 入力ごとの処理:
+     - `[y]` or `[e]`: `approved.md` に保存し、`draft.md` を `✅ 承認済み` に更新
+     - `[n]`: `draft.md` を `❌ 却下` に更新
+     - `[s]`: `⬜ 未確認` のまま
+     - `[a]`: `✅ 昇格推奨` の未確認アイテムだけを一括承認
+     - `[d]`: セッション終了
+  7. `conflicts.md` 由来の再確認対象は、必要なら `approved.md` の該当項目を更新し、備考に再確認結果を残します。
+     却下時も承認履歴は消さず、失効・却下の旨を備考に残します。
+  8. `approved.md` が未作成なら、初回のみ次のヘッダーを付けます。
+
+  ```markdown
+  # モザイク承認済みリスト: {{ feature }}
+
+  > このドキュメントはユーザーと AI の対話で承認された情報の一覧です。
+  > `goose-sdd --analyze synthesize {{ feature }}` の入力になります。
+
+  ## 承認済みアイテム
+
+  ### #001
+  - **信頼度**: 85% (高)
+  - **カテゴリ**: TRUTH
+  - **内容**: ...
+  - **ソース**: `docs/sdd/analyze/mosaic/{{ feature }}/foo.md`
+  - **由来**: mosaic
+  - **承認日**: YYYY-MM-DD
+  - **備考**: ...
+  ```
+
+  9. 終了時は `draft.md` を最新状態で保存し、今回の承認数・却下数・残件数・累計承認数を報告します。
+     - 未確認が残る場合: `goose-sdd --analyze mosaic {{ feature }}` で再開可能と案内
+     - 全件完了の場合: `goose-sdd --analyze synthesize {{ feature }}` を案内
+
+settings:
+  temperature: 0.2
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: user_prompt
+    description: "解析対象の機能名（例: user_auth, payment）または 'system'"
+
+extensions:
+- type: builtin
+  name: developer
+  description: ''
+  display_name: null
+  timeout: 300
+  bundled: null
+  available_tools: []
+- type: platform
+  name: todo
+  description: Enable a todo list for Goose so it can keep track of what it is doing
+  bundled: true
+  available_tools: []
+- type: platform
+  name: Extension Manager
+  description: Enable extension management tools for discovering, enabling, and disabling extensions
+  bundled: true
+  available_tools: []
+- type: platform
+  name: skills
+  description: Load and use skills from .claude/skills or .goose/skills directories
+  bundled: true
+  available_tools: []
+- type: platform
+  name: summarize
+  description: Load files/directories and get an LLM summary in a single call
+  display_name: Summarize
+  timeout: 300
+  bundled: true
+  available_tools: []

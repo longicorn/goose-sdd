@@ -152,7 +152,7 @@ async function setup() {
       "code",
       "review",
     ]],
-    ["analyze", ["init", "discover", "feature", "gather"]],
+    ["analyze", ["init", "discover", "feature", "gather", "mosaic"]],
     ["tool", ["ask"]],
   ];
 
@@ -432,7 +432,12 @@ async function analyze(args: string[]) {
     console.log("  gather(g) [sub-recipe] <feature>"); //コード等から解析する
     console.log("    sub-recipe: gather/*");
     console.log("    infrastructure");
+    console.log("    stack-inventory <feature>");
+    console.log("    database <feature>");
     console.log("    codebase-analyzer <feature> [analysis_focus]");
+    console.log("    feature-catalog <feature>");
+    console.log("    system-context <feature>");
+    console.log("  mosaic(m) <feature>"); // featureの初期化
     console.log("  help");
   }
 
@@ -445,10 +450,8 @@ async function analyze(args: string[]) {
     "f": "feature",
     "gather": "gather",
     "g": "gather",
-    "synthesize": "synthesize",
-    "s": "synthesize",
-    "elevate": "elevate",
-    "e": "elevate",
+    "mosaic": "mosaic",
+    "m": "mosaic",
     "help": "help",
     "h": "help",
   };
@@ -536,6 +539,14 @@ async function analyze(args: string[]) {
             }
           }
         }
+        break;
+      }
+      case "mosaic":
+        const featureName = args[1];
+        await runGooseRecipe("document", cacheYaml, true, sessionName, [
+          "--params",
+          `feature=${featureName}`,
+        ]);
         break;
       }
       case "help":
