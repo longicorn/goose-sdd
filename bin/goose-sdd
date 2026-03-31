@@ -152,7 +152,7 @@ async function setup() {
       "code",
       "review",
     ]],
-    ["analyze", ["init", "discover", "feature", "gather", "mosaic", "synthesize"]],
+    ["analyze", ["init", "discover", "feature", "gather", "mosaic", "synthesize", "elevate"]],
     ["tool", ["ask"]],
   ];
 
@@ -439,6 +439,7 @@ async function analyze(args: string[]) {
     console.log("    system-context <feature>");
     console.log("  mosaic(m) <feature>"); // featureの初期化
     console.log("  synthesize(s) <feature>"); //集めた結果からas-isのドキュメントを作る
+    console.log("  elevate(e) <feature>"); //調停を行いがら、as-isからto-beへの昇格を行う
     console.log("  help");
   }
 
@@ -455,6 +456,8 @@ async function analyze(args: string[]) {
     "m": "mosaic",
     "synthesize": "synthesize",
     "s": "synthesize",
+    "elevate": "elevate",
+    "e": "elevate",
     "help": "help",
     "h": "help",
   };
@@ -545,7 +548,8 @@ async function analyze(args: string[]) {
         break;
       }
       case "mosaic":
-      case "synthesize": {
+      case "synthesize":
+      case "elevate": {
         const featureName = args[1];
         await runGooseRecipe("document", cacheYaml, true, sessionName, [
           "--params",
