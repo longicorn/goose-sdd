@@ -1,121 +1,173 @@
-このドキュメントの[日本語版](./02_philosophy.md)もあります。
+This document is also available in [Japanese](./02_philosophy.md).
 
-# Problem Organization and Solution Proposal
+# Philosophy: How `goose-sdd` Is Meant to Be Operated
 
-In [01_problem_context.md](/docs/concept/01_problem_context.md), we summarized the problems of existing development. Here, we will outline the solutions to those problems.
+In [01_problem_context.md](./01_problem_context.md), the need for Reverse SDD was framed.
+This document explains the operating philosophy `goose-sdd` uses in response.
 
-## Lack of Documentation
+## 1. `goose-sdd` is an operational interface over Goose recipes
 
-This is primarily caused by the high cost of document generation. As seen in the Vibe Coding example, AI-driven document generation can keep costs low. However, similar to Vibe Coding, a problem arises with the quality of the generated documents, which could be called "Vibe Documents." To avoid this, specifications must be written according to a certain format. This is the same as the past practice of writing documents correctly.
-As long as the format is followed correctly, AI-driven document generation will likely be of high quality and low cost.
-The idea of SDD development by AI is correct.
+`goose-sdd` is not a large standalone platform.
+It is a wrapper that organizes [Goose](https://github.com/block/goose) recipes
+into a command structure that is easier to operate for SDD.
 
-## Dependency Issues with Existing SDD Tools
+That gives it several advantages:
 
-The AI Agent I usually use is [Goose](https://github.com/block/goose).
-Assuming the use of Goose helps solve the problems I will mention, so I'll state this first.
+- it keeps Goose's interactive workflow
+- model and provider selection stay aligned with Goose
+- it can use well-known CLI-oriented providers such as Claude Code, Codex, and Gemini CLI, along with many other AI APIs
+- it remains CLI-first instead of UI-bound
+- behavior can be customized at the recipe level
 
-### Adopting Goose
+So the essence of `goose-sdd` is not abstract SDD theory.
+It is command-oriented operation that can survive real development work.
 
-Here are some features of Goose relevant to goose-sdd:
+## 2. Specs are living documents, not static deliverables
 
-- As it says, "goose is your on-machine AI agent, capable of automating complex development tasks from start to finish," making it suitable for developers.
-- It can integrate with numerous LLMs, and tools like Claude Code CLI, Gemini CLI, etc., are also available. This also helps solve API cost issues.
-- Conversations with the AI are displayed in a simple, unadorned terminal screen, which is easy for a Vimmer like me to handle, unlike other CLIs.
-- MCP and Agent SKILL are also available.
-- The Recipe function allows for the automation of specific tasks.
-  - It can be executed as a command with `goose run --recipe recipe.yaml`.
-  - With `goose run --recipe recipe.yaml --interactive`, you can continue the conversation with the AI after the recipe has been executed.
+`docs/sdd/` is not an archive of completed documents.
+It is a working area updated jointly by humans and AI.
 
-For more details, please refer to the [Goose Document](https://block.github.io/goose/).
+That means the workflow assumes:
 
-The ability to turn specific, routine processes into command-line commands eliminates the restriction of having to use other tools, unlike existing SDD tools.
-Assuming this is possible, organizing recipes and command structures to simplify execution will enable the automation of various tasks.
-`goose-sdd` is based on this idea and is considered optimal for realizing an SDD workflow using Goose.
+- humans may edit the documents directly
+- AI output may always be revised
+- the same commands may be rerun to refresh documents
+- temporary drift is tolerated, but not ignored
 
-## The Overly Complex Nature of Existing SDD Tools
+The goal is not to freeze correctness.
+It is to keep the current understanding reflected.
 
-I've seen the expression "using a sledgehammer to crack a nut" as feedback on existing SDD tools. There was a report where trying to fix a small bug (the nut) resulted in the tool generating a huge document (the sledgehammer) with "four user stories and a total of 16 acceptance criteria," which ended up creating more work. I share a similar impression.
+## 3. The single source of truth is mutable
 
-I believe this is because they try to document the entire system, from each feature down to the minute details.
-I think documentation should be properly separated and managed, just as humans have done in the past.
-I have defined two layers: the overall system documentation (Macro) and the documentation for each feature or specific common architecture (Micro).
+Even if `docs/sdd/` is treated as the single source of truth,
+that does not mean it never changes.
 
-Following this, `goose-sdd` has broadly divided its commands into two: `goose-sdd --system ...` and `goose-sdd --feature ...`.
-Furthermore, creating all documents at once can make the process slow and difficult to understand.
+Real operation includes both of these:
 
-Therefore, taking `goose-sdd --system` as an example, we provide subcommands as follows, with one command generating one document. The `goose-sdd --feature` command follows the same principle.
-Also, if your understanding evolves or the premises change, you can simply run the command again to update the corresponding document.
-If you re-run a command to update a document, it is recommended to re-run the subsequent commands as well.
+- humans define new intent and update the spec
+- reality changes first in code, and the spec follows later
 
-Incidentally, each command should take about a few tens of minutes for a small to medium-sized system, depending on its scale.
-Furthermore, pre-generating the documents and having each command read them will make the conversation easier.
+Because of that, `goose-sdd` keeps the principle that specs matter,
+while also formally allowing specs to be updated when reality leads.
 
-### init
-Command: `goose-sdd --system init <language>`
+## 4. Information must be handled by confidence level
 
-Creates `docs/sdd/` and initializes each document.
+Once `goose-sdd --analyze` exists, the tool has to distinguish between types of information.
 
-### background
-Command: `goose-sdd --system background`
+### Code-backed facts
 
-Creates or updates `docs/sdd/00_product_background.md`.
-It converses with the user to describe the system's background, purpose, overall picture, and concepts.
+Information derived from code, config, database schema, infrastructure definition,
+or execution behavior. These are relatively verifiable.
 
-### concept
-Command: `goose-sdd --system concept`
+### Mosaic information
 
-Creates or updates `docs/sdd/01_system_concept.md`.
-It reads `docs/sdd/00_product_background.md` and describes the system's concept.
-If more information is needed, it will converse with the user to deepen understanding before creating the document.
+Information from Notion, Confluence, meeting notes, conversation, memory, or requests.
+It may be useful, but it is not truth by default.
 
-### architecture
-Command: `goose-sdd --system architecture`
+### Approved understanding
 
-Reads these files and describes the system's architecture in `docs/sdd/02_system_architecture.md`.
-- `docs/sdd/00_product_background.md`
-- `docs/sdd/01_system_concept.md`
+Information that has been reviewed with a human and accepted as safe to use
+for AS-IS understanding or future To-Be work.
 
-If more information is needed, it will converse with the user to deepen understanding before creating the document.
+The important point is that `mosaic` should not become spec automatically.
+`goose-sdd` cares less about collecting fuzzy information than about promoting it safely.
+The broader problem framing behind this is summarized in the related note
+[The Information Mosaic](https://gist.github.com/longicorn/8f4d878eaecff4b0c4a1c964fc267056).
 
-### rules
-Command: `goose-sdd --system rules`
+## 5. Commands are designed as small conversational units
 
-Reads these files and describes rules for collaboration with AI, coding conventions, testing policies, etc., in `docs/sdd/03_project_rules.md`.
-- `docs/sdd/00_product_background.md`
-- `docs/sdd/01_system_concept.md`
-- `docs/sdd/02_system_architecture.md`
+`goose-sdd` follows a one-command, one-theme principle.
+That is not only about convenience.
 
-If more information is needed, it will converse with the user to deepen understanding before creating the document.
+The purpose is to:
 
-### glossary
-Command: `goose-sdd --system glossary`
+- keep each step small enough for human review
+- make selective reruns possible
+- keep AI context focused
+- reduce failure modes caused by large one-shot generation
 
-Reads these files and describes the domain glossary in `docs/sdd/04_domain_glossary.md`.
-- `docs/sdd/00_product_background.md`
-- `docs/sdd/01_system_concept.md`
-- `docs/sdd/02_system_architecture.md`
-- `docs/sdd/03_project_rules.md`
+For example, the System Layer is split into background, concept, architecture, rules, and glossary.
+The Feature Layer is split into requirements, design, test, code, and review.
 
-If more information is needed, it will converse with the user to deepen understanding before creating the document.
+## 6. `goose-sdd` has two main flows
 
-### The Drift Between Document and Code
+### Forward Flow
 
-This is the problem I mentioned in "Lack of Documentation." It also leads to a vicious cycle where developers, unable to understand the system, create code that "just works" without realizing there are issues. This makes understanding even more difficult, and subsequent code becomes even more problematic.
-I also get the impression that such workplaces tend to avoid bearing the costs of product maintainability, such as refactoring and document generation.
+This is the path from intent into implementation.
 
-To solve these problems, I believe it is crucial to make the document update approach (Flow) bidirectional.
+```text
+background/concept/architecture
+  -> requirement/design
+  -> test/code/review
+```
 
-- 1.  **Forward Sync (Design First / To-Be):**
-    -   When adding new features or making modifications, the document is updated first, and the code is changed based on it.
-    -   It functions as an instruction manual for the AI (Goose) and prevents implementation from going astray.
-- 2.  **Reverse Sync (Reality First / As-Is):**
-    -   A flow that "back-propagates" facts discovered during implementation or results from analyzing existing code into the documentation.
-    -   When the code (reality) changes first, the document is immediately brought up to date with reality, resolving any drift.
+Here, `docs/sdd/` acts as the instruction set for AI-assisted implementation.
 
-goose-sdd maintains a state where "document and code are always consistent (Single Source of Truth)" by cycling through these "two flows."
+### Reverse Flow
 
-In other words, `goose-sdd` should have the following principles:
+This is the path from existing implementation back into explainable structure.
 
-*   **Single Source of Truth is Mutable:** The specification (Spec) is the authority, but if the code (Reality) changes first, the spec must be promptly updated to match the code (Reverse Sync).
-*   **Verification:** Periodically check the consistency between the documents under `docs/sdd/` and the actual code. If any drift is found, recommend "updating the documentation."
+```text
+discover -> feature
+             |-> gather ---|
+             |             |-> synthesize -> elevate
+             |-> mosaic ---|
+```
+
+Here, `docs/sdd/analyze/` is the working area.
+`gather` is the path for collecting facts from code and config,
+while `mosaic` is a separate path for handling fragmented human-written information.
+They can proceed independently, and `synthesize` is the stage that combines both.
+
+## 7. The Analyze Layer is for negotiation readiness, not only reverse generation
+
+The output of `--analyze` is AS-IS documentation.
+But that is not the real endpoint.
+
+Its deeper role is to:
+
+- make current reality explainable
+- help humans notice pain points and contradictions
+- make it easier to decide where SDD should start in an existing codebase
+- avoid writing To-Be documents on top of guessed As-Is assumptions
+
+The important part is not to blur `gather` and `mosaic`.
+`gather` expands code-backed facts.
+`mosaic` handles fuzzy information safely.
+Either path may advance first, but `synthesize` is explicitly designed to integrate both inputs.
+
+That is why `elevate` matters.
+It is the stage where teams decide what to adopt, what to revise, and what to discard.
+
+## 8. Recommended operating model
+
+### Greenfield work
+
+- use `--system` to shape the whole system
+- use `--feature` or `--implement` for delivery work
+- if implementation runs ahead, use reverse-oriented updates to recover alignment
+
+### Existing systems
+
+- use `--analyze` to recover AS-IS
+- let humans inspect drift and issues
+- promote only the necessary parts into `--system` or `--feature`
+
+### Ongoing operation
+
+- not every code change needs a full documentation rewrite
+- but drift should be corrected locally before it spreads
+- treat SDD as ongoing understanding maintenance, not as an up-front ceremony
+
+## 9. Summary
+
+The philosophy of `goose-sdd` can be summarized like this:
+
+- SDD should not be limited to greenfield work
+- specs and code should synchronize in both directions
+- information should be separated by confidence level
+- documents should be maintained as living documents
+- tools should stay small, rerunnable, and operable
+
+With Reverse SDD in place, `goose-sdd` is no longer only a tool for creating specs first.
+It becomes a tool for regaining and evolving specs while keeping development under control.

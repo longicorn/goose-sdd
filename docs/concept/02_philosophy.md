@@ -1,115 +1,181 @@
 This document is also available in [English](./02_philosophy.en.md).
 
-# 問題の整理と解決策の提案
-[01_problem_context.md](/docs/concept/01_problem_context.md) で既存開発の問題をまとめてきた。ここではその問題に対する解決策をまとめる。
+# Philosophy: `goose-sdd` はどう運用するツールなのか
 
-## ドキュメントの不足
-これは主にドキュメント生成のコストが高いという問題が原因だ。Vibe Codingの例のようにAIによるドキュメント生成はコストが低くおさえられる。ただしVibe Codingと同じく生成されるドキュメントの質Vibe Documentとでも呼ぶべき問題が出てくる。これを避けるには一定のフォーマットに従って仕様を書く必要がある。いままでの開発で正しくドキュメントを書いていた自体と同じものだ。
-正しくフォーマットに従いさせすれば、AIによるドキュメント生成は質が高く生成コストが低くなるだろう。
-AIによるSDD開発という考え方は正しい。
+[01_problem_context.md](./01_problem_context.md) では、
+なぜ `goose-sdd` に Reverse SDD が必要かを整理しました。
+この文書では、その問題に対して `goose-sdd` が採っている運用思想を説明します。
 
-## 既存 SDD ツールの依存問題
-私が普段利用している AI Agent は [Goose](https://github.com/block/goose) である。
-Gooseの利用を前提にすることで述べる問題の解決につながるので先に述べる。
+## 1. `goose-sdd` は Recipe を整理した運用インターフェースである
 
-### goose の採用
-いくつかgoose-sddに関係する特徴を上げる
+`goose-sdd` は巨大な独自プラットフォームではありません。
+[Goose](https://github.com/block/goose) の Recipe を、
+SDD のために使いやすいコマンド体系へ整理したラッパーです。
 
-- `goose is your on-machine AI agent, capable of automating complex development tasks from start to finish.` とあるように開発者が利用するのに適している
-- 多数の LLM と連携することができ、Claude Code CLI, Gemini CLI等も利用可能。これはAPIのコスト問題を解決することにもなる。
-- AI との会話も他の CLI とは異なり Terminal 上で無駄な装飾がないシンプルな画面で Vimmer の私には扱いやすい。
-- MCP , Agent SKILL も利用可能。
-- Recipe 機能により特定タスクを自動化することができる。
-  - `goose run -recipe recipe.yaml` とすることでコマンドとして実行可能
-  - `goose run -recipe recipe.yaml --interactive` とするとレシピ実行後にAIとの会話を続けることができる
+この方針には利点があります。
 
-詳しくは [Goose Document](https://block.github.io/goose/) を参照してほしい。
+- Goose の対話型ワークフローをそのまま使える
+- モデルやプロバイダの選択を Goose 側に寄せられる
+- Claude Code、Codex、Gemini CLI のような有名な CLI 系ツールや、その他多くの AI API を Provider として使える
+- UI 固定ではなく CLI 中心で扱える
+- レシピ単位で挙動を差し替えやすい
 
-特定の定形処理をコマンドライン化できるということは、既存SDDツールとは異なり他ツールを利用するという制限がなくなる。
-これを前提にできるということは Recipe とコマンド体系を整理し実行を簡単にすれば様々なタスクを自動化することが可能になる。
-`goose-sdd` はこの考えを元に goose を利用した SDD のワークフローを実現するのに最適と考えている。
+つまり `goose-sdd` の本質は、
+「SDD の理想論」ではなく「現場で回せるコマンド運用」にあります。
 
-## 既存 SDD ツールの重厚長大
-既存 SDD ツールを利用した意見として `ナッツを割るのにスレッジハンマー` という表現を見た。小さなバグ修正（ナッツ）をしようとしたところ、ツールが「4つのユーザーストーリーと合計16の受け入れ基準」という巨大なドキュメント（スレッジハンマー）を生成してしまい、かえって手間が増えたという報告だ。私個人の意見でも同様の印象だ。
+## 2. 仕様は静的な成果物ではなく Living Document である
 
-これはシステム全体をドキュメント化し各機能から細かい部分までドキュメント化しようとするからと考えている。
-私はドキュメントを今まで人が作成してきたようにドキュメントは正しく分離して管理するべきだと考える。
-私はシステム全体のドキュメント(Macro)と各機能や特定の共通アーキテクチャ等(Micro)という2つのレイヤーを定義した。
+`docs/sdd/` は納品物置き場ではありません。
+人間と AI が共同で更新する作業領域です。
 
-これに従い `goose-sdd` はコマンドを大きく2つに分けた。 `goose-sdd --system ...` 、 `goose-sdd --feature ...` だ。
-さらに全てのドキュメントを一度に作成すると動作が重くなり理解が困難となりやすい。
+そのため、次を前提にします。
 
-よって 例えば `goose-sdd --system` を例にあげると、以下のようサブコマンドを提供し1コマンドで1ドキュメント生成とした。 `goose-sdd --feature` も同様の考え方となっている。
-また、理解が進んだり、前提が変化したりした場合には再度実行すれば対象ドキュメントを更新することが可能だ。
-再実行してドキュメントを更新した場合後続のコマンドを再実行を推奨する
+- ドキュメントは人間が直接編集してよい
+- AI が出した内容は常に見直してよい
+- 同じコマンドを再実行して更新してよい
+- 一時的な乖離は許容するが、放置はしない
 
-ちなみに各コマンドはシステムの規模にもよるが小〜中規模程度のシステムであれば数十分程度で終わるはずだ。
-さらに事前にドキュメントを生成しておきそれを各コマンドで読み込ませれば会話が楽になる。
+重要なのは「正しさを固定すること」ではなく、
+「現在の理解を反映し続けること」です。
 
-### init
-コマンド: `goose-sdd --system init <language>`
+## 3. Single Source of Truth は mutable である
 
-`docs/sdd/` を作成し各ドキュメントの初期化を行う。
+`docs/sdd/` を Single Source of Truth と呼ぶとしても、
+それは一度決めたら変わらないという意味ではありません。
 
-### background
-コマンド: `goose-sdd --system background`
+実際の運用では次の両方が起こります。
 
-`docs/sdd/00_product_background.md` を作成、更新する。
-ユーザと会話し、システムの背景や目的、全体像、概念について記述する。
+- 人間が新しい意図を定め、仕様を更新する
+- コード側の現実が先に変わり、後から仕様を追従させる
 
-### concept
-コマンド: `goose-sdd --system concept`
+このため `goose-sdd` は、`Spec が正` という原則を残しつつも、
+`Reality が先行したときには Spec を更新する` ことを正式に認めます。
 
-`docs/sdd/01_system_concept.md` を作成、更新する。
-`docs/sdd/00_product_background.md` を読み込みシステムのコンセプトについて記述する。
-情報が足りなければユーザと会話し理解を進めて作成する。
+## 4. 情報は信頼度ごとに分離して扱う
 
-### architecture
-コマンド: `goose-sdd --system architecture`
+`goose-sdd --analyze` を入れたことで、
+`goose-sdd` は情報の性質を明確に区別する必要が出てきました。
 
-これらを読み込みシステムのアーキテクチャついて `docs/sdd/02_system_architecture.md` に記述する。
-- `docs/sdd/00_product_background.md`
-- `docs/sdd/01_system_concept.md`
+### Code-backed facts
 
-情報が足りなければユーザと会話し理解を進めて作成する。
+コード、設定、DB スキーマ、インフラ定義、実行結果など、
+比較的検証しやすい現実由来の情報です。
 
-### rules
-コマンド: `goose-sdd --system rules`
+### Mosaic information
 
-これらを読み込みAIとの協働ルール、コーディング規約、テスト方針などついて `docs/sdd/03_project_rules.md` に記述する。
-- `docs/sdd/00_product_background.md`
-- `docs/sdd/01_system_concept.md`
-- `docs/sdd/02_system_architecture.md`
+Notion、Confluence、議事録、会話、記憶、要望など、
+有用だがそのまま真実とは限らない情報です。
 
-情報が足りなければユーザと会話し理解を進めて作成する。
+### Approved understanding
 
-### glossary
-コマンド: `goose-sdd --system glossary`
+人間との対話を通じて確認され、
+AS-IS や今後の To-Be に採用してよいと判断された理解です。
 
-これらを読み込みAIとの協働ルール、コーディング規約などついて `docs/sdd/04_domain_glossary.md` に記述する。
-- `docs/sdd/00_product_background.md`
-- `docs/sdd/01_system_concept.md`
-- `docs/sdd/02_system_architecture.md`
-- `docs/sdd/03_project_rules.md`
+`mosaic` をそのまま仕様にしないことが重要です。
+`goose-sdd` は、曖昧な情報を収集することより、
+それを安全に昇格させる過程を重視します。
+この背景にある `Information Mosaic` という問題設定は、
+[The Information Mosaic](https://gist.github.com/longicorn/8f4d878eaecff4b0c4a1c964fc267056)
+に別メモとして整理しています。
 
-情報が足りなければユーザと会話し理解を進めて作成する。
+## 5. コマンドは「大きな自動化」ではなく「小さな会話単位」で設計する
 
-### ドキュメントとコードの剥離
-この問題は `ドキュメントの不足` で述べたことだ。またこれにより開発者が理解ができず問題があると理解していないがら動作するだけのコードを作成し、この結果理解がさらに困難になり、次に開発されるコードがさらに問題があるという悪循環に陥る。
-またこういった現場はリファクタリングやドキュメント生成等プロダクトの保守性に対してコスト負担を避けたいという意思を持っているような印象もある。
+`goose-sdd` は 1 コマンド 1 テーマを基本にしています。
+これは単なる操作性の問題ではありません。
 
-私はこれらを解決するために、ドキュメント更新のアプローチ（Flow）を双方向にする ことが重要だと考える。
+狙いは次の通りです。
 
-- 1. Forward Sync (Design First / To-Be):
-  - 新機能や改修の際、まずドキュメントを更新し、それを元にコードを変更するフロー。
-  - AI（Goose）への指示書として機能し、実装の迷走を防ぐ。
-- 2. Reverse Sync (Reality First / As-Is):
-  - 実装中に判明した事実や、既存コードの解析結果をドキュメントに「逆流」させるフロー。
-  - コード（現実）が先行して変化した場合、即座にドキュメントを現実に追いつかせることで、乖離（Drift）を解消する。
+- 人間がレビューできるサイズに分ける
+- 必要なところだけ再実行できるようにする
+- AI のコンテキストを細く保つ
+- 巨大な一括生成による幻覚や破綻を減らす
 
-goose-sdd は、この 「2つのフロー」 を循環させることで、常に 「ドキュメントとコードが一致している状態（Single Source of Truth）」 を維持し続ける。
+たとえば System Layer は、
+背景、コンセプト、アーキテクチャ、ルール、用語集に分かれています。
+Feature Layer も、要求、設計、テスト、コード、レビューに分かれています。
 
-つまり `goose-sdd` は以下の原則を持つのが良いだろう
+## 6. `goose-sdd` には 2 つの主フローがある
 
-* Single Source of Truth is Mutable: 仕様書（Spec）が正であるが、コード（Reality）が先行して変化した場合、速やかに仕様書をコードに合わせて更新（Reverse Sync）しなければならない。
-* Verification: `docs/sdd/` 以下のドキュメントと実際のコードの整合性を定期的にチェックし、乖離があれば「ドキュメントの更新」を推奨する。
+### Forward Flow
+
+新しい機能や変更を、意図から実装へ落としていく流れです。
+
+```text
+background/concept/architecture
+  -> requirement/design
+  -> test/code/review
+```
+
+ここでは `docs/sdd/` が AI への指示書として働きます。
+
+### Reverse Flow
+
+既存コードや先行実装から、今の現実を回復する流れです。
+
+```text
+discover -> feature
+             |-> gather ---|
+             |             |-> synthesize -> elevate
+             |-> mosaic ---|
+```
+
+ここでは `docs/sdd/analyze/` が作業領域となります。
+`gather` はコードや設定から事実を集める流れで、
+`mosaic` は人間が持つ断片情報を扱う別系統の流れです。
+両者は独立して進められ、`synthesize` がその両方を統合します。
+
+## 7. Analyze Layer は「逆生成」ではなく「交渉準備」のためにある
+
+`--analyze` の成果は AS-IS ドキュメントです。
+ただし、それは最終成果物ではありません。
+
+本当の役割は次の通りです。
+
+- 今の現実を説明可能にする
+- 人間が違和感や問題点を発見しやすくする
+- 既存コードに対して、どこから SDD を始めるか判断しやすくする
+- To-Be へ進む前に、As-Is を雑に仮定しないようにする
+
+特に重要なのは、`gather` と `mosaic` を混同しないことです。
+`gather` は code-backed facts を増やす工程であり、
+`mosaic` は曖昧情報を安全に扱うための工程です。
+どちらか片方だけ先に進むことはありえますが、
+`synthesize` は両方の入力を統合する場として設計されています。
+
+したがって `elevate` は重要です。
+AS-IS をそのまま正規仕様にするのではなく、
+どこを採用し、どこを修正し、どこを捨てるかを判断する段階だからです。
+
+## 8. 推奨される運用像
+
+### 新規開発
+
+- `--system` で全体像を固める
+- `--feature` または `--implement` で個別開発を進める
+- 途中で実装が先行したら、必要に応じて Reverse 的に整合を取り戻す
+
+### 既存開発
+
+- `--analyze` で AS-IS を回復する
+- 問題や乖離を人間が確認する
+- 必要な範囲だけ `--system` / `--feature` に昇格する
+
+### 継続運用
+
+- コード変更のたびに全ドキュメントを更新する必要はない
+- ただし、乖離が広がる前に局所的に同期を取り直す
+- SDD を「最初に全部書く儀式」ではなく「理解を維持する運用」として扱う
+
+## 9. まとめ
+
+`goose-sdd` の思想は次のようにまとめられます。
+
+- SDD は新規開発専用であってはならない
+- 仕様とコードは片方向ではなく双方向に同期されるべき
+- 情報は信頼度ごとに分離して扱うべき
+- ドキュメントは固定物ではなく Living Document として維持すべき
+- ツールは重厚長大ではなく、小さく再実行可能であるべき
+
+Reverse SDD が入ったことで、`goose-sdd` は
+「仕様から作るツール」ではなく、
+「仕様を育て直しながら開発を制御するツール」に近づいています。
