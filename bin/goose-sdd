@@ -148,7 +148,7 @@ async function setup() {
       "code",
       "review",
     ]],
-    ["analyze", ["init"]],
+    ["analyze", ["init", "discover"]],
     ["tool", ["ask"]],
   ];
 
@@ -402,12 +402,15 @@ async function implement(args: string[]) {
 async function analyze(args: string[]) {
   function help() {
     console.log("  init(i)");
+    console.log("  discover(d)"); //Macroの解析を行う
     console.log("  help");
   }
 
   const subcommands: { [key: string]: string } = {
     "init": "init",
     "i": "init",
+    "discover": "discover",
+    "d": "discover",
     "help": "help",
     "h": "help",
   };
@@ -424,6 +427,10 @@ async function analyze(args: string[]) {
           "--params",
           `language=${language}`,
         ]);
+        break;
+      }
+      case "discover": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName);
         break;
       }
       case "help":
