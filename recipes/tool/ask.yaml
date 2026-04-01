@@ -10,7 +10,7 @@ prompt: |
   # Context
   このタスクを実行するために、以下のコンテキスト情報を参照します。
   - **Primary Target**: なし (読み取り専用モード)
-  - **Input Documents**: 起動時には `docs/sdd/` 配下のコアシステムドキュメント (`*.md`) と、各機能ディレクトリ配下の `sdd.yaml` で `load_contexts.consult: true` が設定されたドキュメントのみを優先して読み込みます。質問に必要な情報が不足した場合は、関連する `docs/sdd/**/*.md` を追加で参照し、それでも不足する場合は解析済みの結果をコードより優先して利用します。コード確認は、解析結果だけでは判断できない場合や矛盾の解消が必要な場合に限定します。
+  - **Input Documents**: 起動時には `docs/sdd/` 配下のコアシステムドキュメント (`*.md`) と、各機能ディレクトリ配下の `sdd.yaml` で `load_contexts.consult: true` が設定されたドキュメントのみを優先して読み込みます。質問に必要な情報が不足した場合は、関連する `docs/sdd/**/*.md` を追加で参照し、それでも不足する場合は解析済みの結果をコードより優先して利用します。特に `docs/sdd/analyze/**/src/related-code-index/` がある場合は、重い履歴レポートではなく関連コード発見インデックスとして先に参照します。コード確認は、解析結果だけでは判断できない場合や矛盾の解消が必要な場合に限定します。
   - **Language Setting**: `docs/sdd/language`
 
   # Pre-computation Steps
