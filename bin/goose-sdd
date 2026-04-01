@@ -15,11 +15,15 @@ const projectName = path.basename(Deno.cwd());
 const currentPath = path.fromFileUrl(import.meta.url);
 const currentDir = path.dirname(currentPath);
 const recipeDir = path.join(currentDir, "..", "recipes");
-const userConfigTop = env.XDG_CONFIG_HOME || path.join(env.HOME, "/.config");
-const userConfigDir = path.join(userConfigTop, "goose-sdd");
+//const userConfigTop = env.XDG_CONFIG_HOME || path.join(env.HOME, "/.config");
+const userConfigTop = ".config"
+//const userConfigTop = env.XDG_CONFIG_HOME
+const userConfigDir = path.join(userConfigTop, "goose");
 
-const cacheConfigTop = env.XDG_CACHE_HOME || path.join(env.HOME, "/.cache");
-const cacheConfigDir = path.join(cacheConfigTop, "goose-sdd");
+//const cacheConfigTop = env.XDG_CACHE_HOME || path.join(env.HOME, "/.cache");
+//const cacheConfigTop = path.join(userConfigTop, "goose/.cache");
+///const cacheConfigTop = path.join(userConfigTop, "goose");
+const cacheConfigDir = path.join(userConfigTop, "goose");
 
 const defaultProvider = env.GOOSE_PROVIDER;
 const defaultModel = env.GOOSE_MODEL;
@@ -51,6 +55,24 @@ async function createMergedYaml(
       `YAML Merge Error (${baseYamlPath}, ${userYamlPath}): ${e.message}`,
     );
   }
+}
+
+async function prepareRecipe(command: string, subcommand: string): Promise<string> {
+  const extensionYaml = path.join(
+    userConfigDir,
+    `recipes/${command}`,
+    `${subcommand}.extension.yaml`,
+  );
+  const cacheYaml = path.join(
+    cacheConfigDir,
+    `recipes/${command}/${subcommand}.yaml`,
+  );
+  await createMergedYaml(
+    `${recipeDir}/${command}/${subcommand}.yaml`,
+    extensionYaml,
+    cacheYaml,
+  );
+  return cacheYaml;
 }
 
 async function runGooseRecipe(
@@ -101,10 +123,16 @@ async function runGooseRecipe(
 }
 
 async function setup() {
-  ["system", "feature", "implement", "tool"].forEach((dir) => {
+  const toSubrecipe = path.join(cacheConfigDir, "recipes/subrecipes");
+  ["system", "feature", "implement", "analyze", "tool"].forEach((dir) => {
     Deno.mkdirSync(`${userConfigDir}/recipes/${dir}`, { recursive: true });
     Deno.mkdirSync(`${cacheConfigDir}/recipes/${dir}`, { recursive: true });
+    Deno.mkdirSync(toSubrecipe, { recursive: true });
   });
+
+  // gather サブレシピ用ディレクトリの作成
+  Deno.mkdirSync(`${userConfigDir}/recipes/analyze/gather`, { recursive: true });
+  Deno.mkdirSync(`${cacheConfigDir}/recipes/analyze/gather`, { recursive: true });
 
   const subcommandNames: [string, string[]][] = [
     ["system", [
@@ -124,6 +152,7 @@ async function setup() {
       "code",
       "review",
     ]],
+    ["analyze", ["init", "discover", "feature", "gather", "mosaic", "synthesize", "elevate"]],
     ["tool", ["ask"]],
   ];
 
@@ -143,6 +172,33 @@ async function setup() {
         yaml.stringify({ extensions: json["extensions"] }),
       );
     }
+  }
+
+  // gather/* サブレシピの extension yaml を生成
+  const gatherSubRecipeDir = path.join(recipeDir, "analyze/gather");
+  const gatherFiles = Deno.readDir(gatherSubRecipeDir);
+  for await (const file of gatherFiles) {
+    if (!file.name.endsWith(".yaml")) continue;
+    const subRecipeName = file.name.replace(/\.yaml$/, "");
+    const filePath =
+      `${userConfigDir}/recipes/analyze/gather/${subRecipeName}.extension.yaml`;
+    if ((await fs.exists(filePath))) continue;
+
+    const yamlText = await Deno.readTextFile(
+      `${gatherSubRecipeDir}/${file.name}`,
+    );
+    const json = yaml.parse(yamlText) as Record<string, unknown>;
+    if (json["extensions"] === undefined) continue;
+    await Deno.writeTextFile(
+      filePath,
+      yaml.stringify({ extensions: json["extensions"] }),
+    );
+  }
+
+  const fromSubrecipe = path.join(recipeDir, "subrecipes");
+  const files = Deno.readDir(fromSubrecipe);
+  for await (const file of files) {
+    Deno.copyFile(`${fromSubrecipe}/${file.name}`, `${toSubrecipe}/${file.name}`)
   }
 }
 
@@ -176,20 +232,7 @@ async function system(args: string[]) {
 
   try {
     const subcommand = subcommands[args[0]];
-    const extensionYaml = path.join(
-      userConfigDir,
-      "recipes/system",
-      `${subcommand}.extension.yaml`,
-    );
-    const cacheYaml = path.join(
-      cacheConfigDir,
-      `recipes/system/${subcommand}.yaml`,
-    );
-    await createMergedYaml(
-      `${recipeDir}/system/${subcommand}.yaml`,
-      extensionYaml,
-      cacheYaml,
-    );
+    const cacheYaml = await prepareRecipe("system", subcommand);
     const sessionName = `SDD System ${subcommand}: ${projectName}`;
 
     switch (subcommand) {
@@ -271,28 +314,15 @@ async function feature(args: string[]) {
       return;
     }
 
-    const extensionYaml = path.join(
-      userConfigDir,
-      "recipes/feature",
-      `${subcommand}.extension.yaml`,
-    );
-    const cacheYaml = path.join(
-      cacheConfigDir,
-      `recipes/feature/${subcommand}.yaml`,
-    );
-    await createMergedYaml(
-      `${recipeDir}/feature/${subcommand}.yaml`,
-      extensionYaml,
-      cacheYaml,
-    );
+    const cacheYaml = await prepareRecipe("feature", subcommand);
     const sessionName = `SDD Feature ${subcommand}: ${projectName}`;
-    const feature_name = args[1];
+    const featureName = args[1];
 
     switch (subcommand) {
       case "init": {
         await runGooseRecipe("document", cacheYaml, false, sessionName, [
           "--params",
-          `feature=${feature_name}`,
+          `feature=${featureName}`,
         ]);
         break;
       }
@@ -300,7 +330,7 @@ async function feature(args: string[]) {
       case "design": {
         await runGooseRecipe("document", cacheYaml, true, sessionName, [
           "--params",
-          `feature=${feature_name}`,
+          `feature=${featureName}`,
         ]);
         break;
       }
@@ -309,7 +339,7 @@ async function feature(args: string[]) {
       case "review": {
         await runGooseRecipe("coding", cacheYaml, true, sessionName, [
           "--params",
-          `feature=${feature_name}`,
+          `feature=${featureName}`,
         ]);
         break;
       }
@@ -357,21 +387,8 @@ async function implement(args: string[]) {
 
   try {
     const subcommand = subcommands[args[0]];
-    const extensionYaml = path.join(
-      userConfigDir,
-      "recipes/implement",
-      `${subcommand}.extension.yaml`,
-    );
-    const cacheYaml = path.join(
-      cacheConfigDir,
-      `recipes/implement/${subcommand}.yaml`,
-    );
+    const cacheYaml = await prepareRecipe("implement", subcommand);
     const sessionName = `SDD Implement ${subcommand}: ${projectName}`;
-    await createMergedYaml(
-      `${recipeDir}/implement/${subcommand}.yaml`,
-      extensionYaml,
-      cacheYaml,
-    );
 
     switch (subcommand) {
       case "init": {
@@ -407,6 +424,153 @@ async function implement(args: string[]) {
   }
 }
 
+async function analyze(args: string[]) {
+  function help() {
+    console.log("  init(i)");
+    console.log("  discover(d)"); //Macroの解析を行う
+    console.log("  feature(f) <feature>"); // featureの初期化
+    console.log("  gather(g) [sub-recipe] <feature>"); //コード等から解析する
+    console.log("    sub-recipe: gather/*");
+    console.log("    infrastructure");
+    console.log("    stack-inventory <feature>");
+    console.log("    database <feature>");
+    console.log("    codebase-analyzer <feature> [analysis_focus]");
+    console.log("    feature-catalog <feature>");
+    console.log("    system-context <feature>");
+    console.log("  mosaic(m) <feature>"); // featureの初期化
+    console.log("  synthesize(s) <feature>"); //集めた結果からas-isのドキュメントを作る
+    console.log("  elevate(e) <feature>"); //調停を行いがら、as-isからto-beへの昇格を行う
+    console.log("  help");
+  }
+
+  const subcommands: { [key: string]: string } = {
+    "init": "init",
+    "i": "init",
+    "discover": "discover",
+    "d": "discover",
+    "feature": "feature",
+    "f": "feature",
+    "gather": "gather",
+    "g": "gather",
+    "mosaic": "mosaic",
+    "m": "mosaic",
+    "synthesize": "synthesize",
+    "s": "synthesize",
+    "elevate": "elevate",
+    "e": "elevate",
+    "help": "help",
+    "h": "help",
+  };
+
+  try {
+    const subcommand = subcommands[args[0]];
+    const cacheYaml = await prepareRecipe("analyze", subcommand);
+    const sessionName = `SDD Analyze ${subcommand}: ${projectName}`;
+
+    switch (subcommand) {
+      case "init": {
+        const language = args[1] || "ja";
+        await runGooseRecipe("document", cacheYaml, false, sessionName, [
+          "--params",
+          `language=${language}`,
+        ]);
+        break;
+      }
+      case "discover": {
+        await runGooseRecipe("document", cacheYaml, true, sessionName);
+        break;
+      }
+      case "feature": {
+        const featureName = args[1];
+        await runGooseRecipe("document", cacheYaml, true, sessionName, [
+          "--params",
+          `feature=${featureName}`,
+        ]);
+        break;
+      }
+      case "gather": {
+        if (args.length >= 3) {
+          const subRecipe = args[1];
+          const subRecipeCacheYaml = await prepareRecipe(
+            "analyze/gather",
+            subRecipe,
+          );
+          switch (subRecipe) {
+            case "database":
+            case "stack-inventory":
+            case "feature-catalog":
+            case "system-context": {
+              const featureName = args[2];
+              await runGooseRecipe("document", subRecipeCacheYaml, true, sessionName, [
+                "--params",
+                `feature=${featureName}`,
+              ]);
+              break;
+            }
+            case "codebase-analyzer": {
+              const featureName = args[2];
+              const extraParams = ["--params", `feature=${featureName}`];
+              if (args[3] !== undefined) {
+                extraParams.push("--params", `analysis_focus=${args[3]}`);
+              }
+              await runGooseRecipe(
+                "document",
+                subRecipeCacheYaml,
+                true,
+                sessionName,
+                extraParams,
+              );
+              break;
+            }
+            default: {
+              console.error(`Error: unknown gather sub-recipe: ${subRecipe}`);
+              help();
+              break;
+            }
+          }
+        } else if (args.length === 2) {
+          const command = args[1];
+          switch (command) {
+            case "infrastructure": {
+              const subRecipeCacheYaml = await prepareRecipe("analyze/gather", command);
+              await runGooseRecipe("document", subRecipeCacheYaml, false, sessionName);
+              break;
+            }
+            default: {
+              const featureName = command;
+              await runGooseRecipe("document", cacheYaml, true, sessionName, [
+                "--params", `feature=${featureName}`,
+              ]);
+              break;
+            }
+          }
+        }
+        break;
+      }
+      case "mosaic":
+      case "synthesize":
+      case "elevate": {
+        const featureName = args[1];
+        await runGooseRecipe("document", cacheYaml, true, sessionName, [
+          "--params",
+          `feature=${featureName}`,
+        ]);
+        break;
+      }
+      case "help":
+      default: {
+        help();
+        break;
+      }
+    }
+  } catch (_) {
+    if (!subcommands[args[0]]) {
+      console.error("Error: unknown subcommand");
+    }
+    help();
+  }
+}
+
 async function tool(args: string[]) {
   function help() {
     console.log("  ask(a): Product Consultant");
@@ -422,17 +586,7 @@ async function tool(args: string[]) {
 
   try {
     const subcommand = subcommands[args[0]];
-    const extensionYaml = path.join(
-      userConfigDir,
-      "recipes/tool",
-      `${subcommand}.extension.yaml`,
-    );
-    const cacheYaml = path.join(cacheConfigDir, "recipes/tool/ask.yaml");
-    await createMergedYaml(
-      `${recipeDir}/tool/ask.yaml`,
-      extensionYaml,
-      cacheYaml,
-    );
+    const cacheYaml = await prepareRecipe("tool", subcommand);
 
     switch (subcommand) {
       case "ask": {
@@ -463,6 +617,7 @@ function help() {
   console.log("--system <subcommand>");
   console.log("--feature <subcommand>");
   console.log("--implement <subcommand>");
+  console.log("--analyze <subcommand>");
   console.log("--tool <subcommand>");
 }
 
@@ -489,6 +644,11 @@ switch (option) {
   case "--implement":
   case "-i": {
     await implement(args);
+    break;
+  }
+  case "--analyze":
+  case "-a": {
+    await analyze(args);
     break;
   }
   case "--tool":
