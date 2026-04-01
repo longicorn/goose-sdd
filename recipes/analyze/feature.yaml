@@ -21,6 +21,7 @@ prompt: |
   ## Step 1: 物理的な足場の作成
   ターミナルコマンド（`mkdir -p` 等）を使用して、以下のディレクトリを安全に作成してください。
   - `docs/sdd/analyze/{{ feature }}/as_is/` (将来的なAIによる仕様書の出力先)
+  - `docs/sdd/analyze/mosaic/{{ feature }}/` (信頼性が未確定なモザイク情報の配置先)
   
   次に、`docs/sdd/analyze/{{ feature }}/` の直下に以下の2つのファイルを作成し、テンプレートを書き込んでください。
 
