@@ -104,6 +104,8 @@ This order is the easiest entry point:
 1. [docs/concept/01_problem_context.md](./docs/concept/01_problem_context.md)
 2. [docs/concept/02_philosophy.md](./docs/concept/02_philosophy.md)
 
+The results of running `goose-sdd` itself can be found at [docs/sdd/](./docs/sdd/) (Japanese only).
+
 ## Typical Workflows
 
 ### For new or design-first development

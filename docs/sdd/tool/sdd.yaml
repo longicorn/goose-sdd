@@ -1,0 +1,10 @@
+summary: "goose-sdd --tool コマンドを通じて、プロジェクトの仕様や設計を理解するためのユーザー支援ユーティリティ機能（askコマンド等）を提供します。"
+# type: 'architecture'
+# type: 'feature'
+type: 'tool'
+load_contexts:
+  consult: true
+  system_reference: false
+  feature_reference: false
+tags: ["tool", "utility", "ask", "consultation"] # Tags to improve searchability
+dependencies: [] # References to other related feature documentation

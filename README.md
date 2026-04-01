@@ -103,6 +103,8 @@ git clone https://github.com/longicorn/goose-sdd
 1. [docs/concept/01_problem_context.md](./docs/concept/01_problem_context.md)
 2. [docs/concept/02_philosophy.md](./docs/concept/02_philosophy.md)
 
+`goose-sdd`自身への実行結果は [docs/sdd/](./docs/sdd/) にあります(日本語のみ)。
+
 ## 典型的な使い方
 
 ### 新規または設計主導で進める場合
