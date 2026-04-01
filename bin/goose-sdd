@@ -130,7 +130,6 @@ async function setup() {
     Deno.mkdirSync(toSubrecipe, { recursive: true });
   });
 
-  // gather サブレシピ用ディレクトリの作成
   Deno.mkdirSync(`${userConfigDir}/recipes/analyze/gather`, { recursive: true });
   Deno.mkdirSync(`${cacheConfigDir}/recipes/analyze/gather`, { recursive: true });
 
@@ -174,7 +173,6 @@ async function setup() {
     }
   }
 
-  // gather/* サブレシピの extension yaml を生成
   const gatherSubRecipeDir = path.join(recipeDir, "analyze/gather");
   const gatherFiles = Deno.readDir(gatherSubRecipeDir);
   for await (const file of gatherFiles) {
@@ -193,12 +191,6 @@ async function setup() {
       filePath,
       yaml.stringify({ extensions: json["extensions"] }),
     );
-  }
-
-  const fromSubrecipe = path.join(recipeDir, "subrecipes");
-  const files = Deno.readDir(fromSubrecipe);
-  for await (const file of files) {
-    Deno.copyFile(`${fromSubrecipe}/${file.name}`, `${toSubrecipe}/${file.name}`)
   }
 }
 
