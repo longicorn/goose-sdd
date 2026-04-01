@@ -1,0 +1,10 @@
+summary: "analyze"
+# type: 'architecture'
+# type: 'feature'
+type:
+load_contexts:
+  consult: false
+  system_reference: false
+  feature_reference: false
+tags: [] # Tags to improve searchability
+dependencies: [] # References to other related feature documentation
