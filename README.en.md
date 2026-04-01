@@ -179,6 +179,7 @@ Typical examples include:
 - analysis commands provided by a framework or runtime
 - classic but still practical tools such as `ctags`
 - general-purpose analyzers such as `scc` or `lizard`
+- history tracing based on `git log`
 
 ```bash
 goose-sdd --analyze gather infrastructure
@@ -186,6 +187,7 @@ goose-sdd --analyze gather stack-inventory <feature>
 goose-sdd --analyze gather database <feature>
 goose-sdd --analyze gather codebase-analyzer <feature> [analysis_focus]
 goose-sdd --analyze gather feature-catalog <feature>
+goose-sdd --analyze gather history-trace <feature> <code_paths...>
 goose-sdd --analyze gather system-context <feature>
 ```
 

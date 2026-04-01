@@ -178,6 +178,7 @@ goose-sdd --analyze elevate <feature>
 - フレームワークやランタイムが提供する解析コマンド
 - `ctags` のような古典的だが現役のツール
 - `scc` や `lizard` のような汎用解析ツール
+- `git log` を起点にした履歴トレース
 
 ```bash
 goose-sdd --analyze gather infrastructure
@@ -185,6 +186,7 @@ goose-sdd --analyze gather stack-inventory <feature>
 goose-sdd --analyze gather database <feature>
 goose-sdd --analyze gather codebase-analyzer <feature> [analysis_focus]
 goose-sdd --analyze gather feature-catalog <feature>
+goose-sdd --analyze gather history-trace <feature> <code_paths...>
 goose-sdd --analyze gather system-context <feature>
 ```
 
