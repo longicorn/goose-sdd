@@ -650,7 +650,7 @@ switch (option) {
   }
   case "--version":
   case "-v": {
-    console.log("1.0.0");
+    console.log("1.0.1");
     break;
   }
   default: {
