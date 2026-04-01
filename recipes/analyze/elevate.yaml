@@ -47,9 +47,10 @@ prompt: |
   2. `docs/sdd/analyze/{{ feature }}/overview.md`
   3. `docs/sdd/analyze/{{ feature }}/context.md`
   4. `docs/sdd/analyze/{{ feature }}/advice.md`
-  5. `docs/sdd/analyze/{{ feature }}/` 配下の gather 成果
-  6. `{{ feature }} != system` の場合のみ、既存の `docs/sdd/0*.md` と `docs/sdd/analyze/system/as_is/`
-  7. 必要最小限の一次証拠（関連コード、設定、スキーマ）
+  5. `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md`（存在する場合のみ。関連コード発見インデックスとして設計意図の補助文脈に参照）
+  6. `docs/sdd/analyze/{{ feature }}/` 配下の gather 成果
+  7. `{{ feature }} != system` の場合のみ、既存の `docs/sdd/0*.md` と `docs/sdd/analyze/system/as_is/`
+  8. 必要最小限の一次証拠（関連コード、設定、スキーマ）
 
   # Promotion Criteria
   AS-IS の各主張を、まず内部的に次のいずれかへ分類してください。
@@ -84,6 +85,7 @@ prompt: |
      - `docs/sdd/analyze/{{ feature }}/overview.md`
      - `docs/sdd/analyze/{{ feature }}/context.md`
      - `docs/sdd/analyze/{{ feature }}/advice.md`
+     - `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md`
      - `docs/sdd/analyze/{{ feature }}/` 配下のサブディレクトリ内 `overview.md`
   5. `{{ feature }} != system` の場合、順方向文脈として次を必要に応じて読み込みます。
      - `docs/sdd/00_product_background.md`

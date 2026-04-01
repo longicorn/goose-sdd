@@ -44,6 +44,7 @@ goose-sdd --analyze gather infrastructure
 goose-sdd --analyze gather database <feature>
 goose-sdd --analyze gather stack-inventory <feature>
 goose-sdd --analyze gather feature-catalog <feature>
+goose-sdd --analyze gather related-code-index <feature> <code_paths...>
 goose-sdd --analyze gather system-context <feature>
 goose-sdd --analyze gather codebase-analyzer <feature> [analysis_focus]
 goose-sdd --analyze mosaic <feature>
@@ -87,6 +88,7 @@ async function analyze(args: string[]): Promise<void>
 | 実行環境・インフラ | `infrastructure` | OS、コンテナ、ネットワーク、配置条件 |
 | 外部境界・連携 | `system-context` | 外部 API、バッチ、センサー、他システム接点 |
 | 機能一覧 | `feature-catalog` | 機能の棚卸し |
+| 関連コード発見 | `related-code-index` | 対象コードと一緒に変更されるコードパスの索引、変更意図の手がかり |
 | 対象コード詳細 | `codebase-analyzer` | モジュール構成、責務、実装詳細 |
 
 設計上、`gather` はこのマトリクスに基づいて不足を埋める。特定カテゴリが未調査のままでもコード解析結果だけで AS-IS を確定してはいけない。
@@ -111,7 +113,13 @@ docs/sdd/analyze/
     ├── pain_points.md
     ├── as_is/
     ├── database/
+    ├── features/
     ├── infrastructure/
+    ├── stack/
+    ├── system_context/
+    ├── src/
+    │   ├── codebase-analyzer/
+    │   └── related-code-index/
     └── ...
 ```
 

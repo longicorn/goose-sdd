@@ -33,9 +33,10 @@ prompt: |
   1. `docs/sdd/analyze/mosaic/{{ feature }}/approved.md` — ユーザーとの対話で承認された確定情報（初期優先度は最高。ただし code-backed facts と衝突した主張は主張単位で優先度を降格し、注記なしで事実採用してはいけない）
   2. `docs/sdd/analyze/{{ feature }}/overview.md` — gather によって発見された客観的事実
   3. `docs/sdd/analyze/{{ feature }}/advice.md` — gather の実行履歴・解析済み内容の記録
-  4. `docs/sdd/analyze/{{ feature }}/context.md` — 機能スコープの定義（補助情報）
-  5. `docs/sdd/analyze/{{ feature }}/as_is/` の既存ドキュメント — すでに存在するAS-IS記述
-  6. `context.md` や gather 成果から特定できる対象コード・設定・スキーマ — 最終的なAS-IS検証のための一次証拠
+  4. `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md` — 対象コードと関連するコードパスを辿るための軽量インデックス（存在する場合のみ。現行事実の断定ではなく補助根拠として扱う）
+  5. `docs/sdd/analyze/{{ feature }}/context.md` — 機能スコープの定義（補助情報）
+  6. `docs/sdd/analyze/{{ feature }}/as_is/` の既存ドキュメント — すでに存在するAS-IS記述
+  7. `context.md` や gather 成果から特定できる対象コード・設定・スキーマ — 最終的なAS-IS検証のための一次証拠
 
   **出力先**:
   - AS-IS ドキュメント: `docs/sdd/analyze/{{ feature }}/as_is/`
@@ -67,6 +68,7 @@ prompt: |
      - `docs/sdd/analyze/mosaic/{{ feature }}/approved.md`（存在しない場合は警告）
      - `docs/sdd/analyze/{{ feature }}/overview.md`（存在しない場合は警告）
      - `docs/sdd/analyze/{{ feature }}/advice.md`（任意）
+     - `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md`（任意）
      - `docs/sdd/analyze/{{ feature }}/context.md`（任意）
 
   3. `docs/sdd/analyze/{{ feature }}/` 配下のサブディレクトリを確認し、`overview.md` が存在するものは読み込みます。
@@ -105,6 +107,7 @@ prompt: |
   7. 生成前の検証メモを内部的に作成します。最低限、以下を記録してください。
      - 主張ごとの判定（FACT / DOC-ONLY / CODE-ONLY / CONFLICT / UNKNOWN）
      - 根拠となる情報源
+     - related-code-index 由来で補助的に採用した関連コード文脈
      - 既存 `as_is/` から再利用可能な記述と再利用不可な記述
      - 不整合ごとの暫定アクション分類（`DOC-FIX` / `CODE-FIX` / `NEEDS-DECISION`）
 

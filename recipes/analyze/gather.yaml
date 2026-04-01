@@ -60,6 +60,7 @@ instructions: |
     - システム全体像 / system context
     - 機能一覧
     - 対象コードの詳細
+    - 履歴上の関連文脈（commit / PR / Issue のつながり）
 
   ## STEP 3: gather サブレシピへの振り分け
   不足情報に応じて、以下の既存または専用レシピの利用を優先的に提案してください。
@@ -77,6 +78,8 @@ instructions: |
   - 対象コードの詳細把握が不足している場合
     - `goose-sdd --analyze gather codebase-analyzer {{ feature }}`
     - 必要に応じて tree-sitter や ctags 等の補助的手段
+  - コードと文書・議論のつながり、変更理由、過去の意思決定経路が不足している場合
+    - `goose-sdd --analyze gather related-code-index {{ feature }} <code_paths...>`
 
   ## STEP 4: ツール調査の方針
   - STEP 2 と STEP 3 の結果に基づき、必要な場合のみ Web 検索を使って静的解析ツール候補を調査してください

@@ -428,6 +428,7 @@ async function analyze(args: string[]) {
     console.log("    database <feature>");
     console.log("    codebase-analyzer <feature> [analysis_focus]");
     console.log("    feature-catalog <feature>");
+    console.log("    related-code-index <feature> <code_paths...>");
     console.log("    system-context <feature>");
     console.log("  mosaic(m) <feature>"); // featureの初期化
     console.log("  synthesize(s) <feature>"); //集めた結果からas-isのドキュメントを作る
@@ -504,6 +505,22 @@ async function analyze(args: string[]) {
               const extraParams = ["--params", `feature=${featureName}`];
               if (args[3] !== undefined) {
                 extraParams.push("--params", `analysis_focus=${args[3]}`);
+              }
+              await runGooseRecipe(
+                "document",
+                subRecipeCacheYaml,
+                true,
+                sessionName,
+                extraParams,
+              );
+              break;
+            }
+            case "related-code-index": {
+              const featureName = args[2];
+              const codePaths = args.slice(3);
+              const extraParams = ["--params", `feature=${featureName}`];
+              if (codePaths.length > 0) {
+                extraParams.push("--params", `code_paths=${codePaths.join("\n")}`);
               }
               await runGooseRecipe(
                 "document",
@@ -650,7 +667,7 @@ switch (option) {
   }
   case "--version":
   case "-v": {
-    console.log("1.0.1");
+    console.log("1.1.0");
     break;
   }
   default: {

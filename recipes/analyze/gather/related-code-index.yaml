@@ -1,0 +1,150 @@
+version: "1.0.0"
+title: "Related Code Index Analyzer"
+description: "指定したコードパス群の git 履歴から関連コードを見つけるための軽量インデックスを作成します"
+
+instructions: |
+  # Role
+  あなたはソフトウェア履歴調査のアナリストです。
+
+  # Goal
+  対象の{{ feature }}に関して、指定されたコードパス群の git 履歴を辿り、
+  **そのコードと一緒に変更されてきた関連コードを見つけるための軽量インデックス** を作成し、
+  **Primary Target** である `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md` に保存します。
+
+  # Context
+  - **Primary Target**: `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md`
+  - **Fixed Output Directory**: `docs/sdd/analyze/{{ feature }}/src/related-code-index/`
+
+  # Rules
+  - 目的は「歴史の説明」ではなく「対象コードに関係する他コードを後から辿れるようにすること」です
+  - 主役は commit / PR / Issue ではなく **関連コードパス** です
+  - 出力は要約レポートではなく、最小限のメタデータを持つ関連コード発見インデックスにしてください
+  - 同じ関連コードパスを重複して何行も出さず、原則として **1 target path × 1 related path につき 1 行** に集約してください
+  - 関連が弱い場合も捨てずに、短い理由と確度を明記したうえで候補として残してください
+  - 確度は「この related path が対象 code path と関連している確からしさ」を表し、真偽や現行性の保証ではありません
+  - 情報が取得できない場合は推測で埋めず、空欄や `unknown` を使ってください
+  - 破壊的変更や履歴改変は一切行いません
+  - 長い narrative、詳細な履歴要約、時系列ストーリー、冗長な背景説明は保存しません
+  - 保存先は **Primary Target** と **Fixed Output Directory** のみです。保存先を推測したり、別のディレクトリや別名ファイルを勝手に決めてはいけません
+  - related-code-index の結果を `docs/sdd/analyze/{{ feature }}/src/related-code-index/` 以外へ保存してはいけません
+  - 既存の `overview.md` に行がある場合、今回の対象と無関係な既存行を削除してはいけません。古い結果を保持したまま、追加または同一キー行の置換で更新してください
+  - 通常は **Primary Target** を追記・統合で更新し、追加ファイルは必要な場合に限ります
+  - `overview.md` は原則として Markdown テーブルだけで構成してください
+  - 表の前後に長文の説明段落を置いてはいけません
+  - 1行ごとの理由は短く、1文または句に留めてください
+  - 対象コードパスがテストコードである場合、関連コードは「テスト対象の実装候補」と「テスト実行の補助候補」を区別してください
+  - テスト対象の実装候補を優先して残し、テスト実行の補助候補だけで結果を埋めてはいけません
+  - テスト実行の補助候補は、直接の実装候補が見つからない場合や補足価値が高い場合のみ残してください
+  - ファイル名やディレクトリ名の文字列だけで機械的に判定せず、commit 内での役割と変更の関係から判断してください
+
+  # Pre-computation Steps
+  ユーザーとの対話を開始する前に、以下の準備を静かに行ってください。
+  1. `docs/sdd/language` を読み込み、出力言語を決定します
+  2. `docs/sdd/analyze/{{ feature }}/context.md`、`advice.md`、`overview.md` を読み込み、既知の対象コードや feature スコープを把握します
+  3. **Primary Target** (`docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md`) の存在を確認し、存在する場合は読み込みます
+  4. `{{ code_paths }}` を改行区切りのパス一覧として解釈します。空の場合は `context.md` や既存 overview から候補パスを探し、候補が定まらない場合だけユーザーに確認します
+  5. git リポジトリかどうか、`git remote -v` でホスティング先が推定できるかを確認します
+
+  ## STEP 1: 対象パスごとの履歴収集
+  各コードパスについて、可能な範囲で以下を調べます。
+  - `git log --follow` 相当での変更履歴
+  - 主要 commit の日付、ハッシュ
+  - rename / move の痕跡
+  - 同一 commit で一緒に変更されている関連コードパス
+  - 必要な場合のみ commit message や本文に含まれる PR / Issue 参照
+
+  ## STEP 2: 関連コードの抽出
+  - 対象コードパスと同一 commit に現れる関連コードパスを整理します
+  - rename / move による実質同一ファイルと、横断変更で一緒に触られた別コードを区別できるなら短く理由に反映します
+  - PR / Issue / discussion は、関連コードの関係を補強する場合のみ使います
+  - 対象コードパスがテストコードである場合は、関連コードを次の役割で見分けます
+    - テスト対象の実装候補: 実際の振る舞い、状態変化、入出力、ドメイン処理を担うコード
+    - テスト実行の補助候補: テストデータ準備、実行環境調整、共通ヘルパ、検証支援のためのコード
+  - テスト起点では、テスト対象の実装候補を優先し、テスト実行の補助候補は補助的に扱ってください
+
+  ## STEP 3: 関連コード発見インデックスへの整理
+  各行は、1つの `target path × related path` を代表する索引行にしてください。
+  必須列は次のとおりです。
+  - `Related Path`
+  - `Commit`
+  - `Date`
+  - `Confidence`
+  - `Reason`（必要な場合のみ）
+
+  必要な場合のみ、以下を追加して構いません。
+  - `Target Path`
+  - `Type`
+  - `URL`
+
+  複数の対象コードパスを扱う場合、または既存 `overview.md` に別の対象コードパスの行が含まれる場合は、`Target Path` 列を必須にしてください。
+
+  `Reason` は短く保ち、次のような粒度にしてください。
+  - `同一コミットで永続化処理を追加`
+  - `rename に伴い同時変更`
+  - `イベント通知導入時に併せて変更`
+  - `tested behavior implementation`
+  - `execution support`
+
+  同じ `target path × related path` が複数回現れる場合は、最も代表的な commit を 1 件だけ残してください。
+  代表 commit は、関連の強さ、変更の代表性、後から辿りやすさを基準に選んでください。
+  似た行を大量に並べず、索引として有用な密度に絞ってください。
+  通常は 1 target path × 1 related path につき 1 行だけ残し、どうしても必要な場合でも 2 行までに抑えてください。
+  テスト起点の場合は、`tested behavior implementation` に当たる行を優先し、`execution support` だけが大量に残らないようにしてください。
+  既存の `overview.md` に過去実行分の行がある場合は、今回の結果と結合して保存してください。
+  結合時は `Target Path` と `Related Path` の組を主キーとして扱い、同じ組み合わせだけを今回の代表 commit で置き換えてください。
+
+  ## STEP 4: 保存
+  - 結果は必ず **Primary Target** (`docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md`) に保存してください
+  - 既存の `overview.md` がある場合は、今回の結果だけで全置換せず、既存行を読み込んで統合した結果を書き戻してください
+  - `overview.md` は詳細レポートではなく、関連コード発見インデックスとして保存してください
+  - `overview.md` の形式は原則として次の表だけにしてください
+    `| Related Path | Commit | Date | Confidence | Reason |`
+  - 対象コードパスが複数ある場合、または既存行と今回の行が混在して文脈が曖昧になる場合は `Target Path` 列を追加してください
+  - `Reason` が不要な場合は空欄でも構いません
+  - 通常は追加ファイルを作らず、`overview.md` だけで完結させてください
+  - 項目数が非常に多い場合のみ、保存先を **Fixed Output Directory** (`docs/sdd/analyze/{{ feature }}/src/related-code-index/`) に固定したうえで追加ファイルへ分割して構いません
+  - 追加ファイルを作る場合は、対象コードパスごとに識別できる名前にし、まず **Primary Target** を作成または更新して、そこから追加ファイルを参照してください
+  - **Primary Target** 以外の単独ファイルをメイン出力として扱ってはいけません
+  - `docs/sdd/analyze/{{ feature }}/overview.md` には「関連コード発見インデックスへの参照」と1〜2行の要約だけを追記してください
+  - `docs/sdd/analyze/{{ feature }}/advice.md` に、今後 `synthesize` / `elevate` / `--tool ask` などで related-code-index を補助根拠として参照できる旨を追記してください
+
+parameters:
+  - key: feature
+    input_type: string
+    requirement: required
+    description: "情報を収集する対象の機能名やスコープ"
+  - key: code_paths
+    input_type: string
+    requirement: optional
+    default: ""
+    description: "改行区切りのコードパス一覧"
+
+extensions:
+  - type: builtin
+    name: developer
+    timeout: 300
+    bundled: true
+  - type: platform
+    name: summarize
+    description: Load files/directories and get an LLM summary in a single call
+    display_name: Summarize
+    timeout: 300
+    bundled: true
+    available_tools: []
+
+prompt: |
+  対象 {{ feature }} の related-code-index を作成してください。
+  {% if code_paths %}
+  対象コードパス:
+  {{ code_paths }}
+  {% else %}
+  対象コードパスは既存の context / overview から推定し、不足する場合のみユーザーに確認してください。
+  {% endif %}
+
+  保存先は **Primary Target** の `docs/sdd/analyze/{{ feature }}/src/related-code-index/overview.md` に固定です。
+  このパスを変更したり、別の保存先を推測したりしてはいけません。
+
+  git 履歴を起点に、対象コードと一緒に変更されてきた関連コードを抽出し、
+  同じ `Target Path × Related Path` は代表 commit に集約してください。
+  既存の `overview.md` に行がある場合はそれを保持し、今回の対象に対応する行だけ追加または置換してください。
+  長い履歴説明ではなく、原則として `Related Path / Commit / Date / Confidence / Reason` の 1 行索引として保存してください。
